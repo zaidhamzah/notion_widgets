@@ -9,7 +9,7 @@
 
 ## Weather
 - [ ] Current Weather Card
-- [ ] Weekly Forecast Widget
+- [x] Weekly Forecast Widget
 - [ ] Minimal Weather (icon + temp only)
 
 ## Countdowns & Timers

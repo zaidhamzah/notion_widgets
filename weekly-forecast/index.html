@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Forecast Widget</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Widget Content -->
+    <div id="widget-root">
+        <div class="weather-container">
+            <div class="current-weather">
+                <div class="location-info">
+                    <h2 id="location-name" class="text-uppercase">LOADING...</h2>
+                    <div class="weather-subtitle">WEATHER</div>
+                </div>
+                
+                <div id="today-icon" class="main-icon"></div>
+                
+                <div class="today-details">
+                    <div class="today-main">
+                        <div class="temperature-big">
+                            <span id="today-temp">--</span>°<span class="unit-label">C</span>
+                        </div>
+                    </div>
+                    <div class="today-desc" id="today-desc">--</div>
+                    <div class="today-hl">
+                        H: <span id="today-high">--</span>° / L: <span id="today-low">--</span>°
+                    </div>
+                </div>
+            </div>
+
+            <div class="forecast-list" id="forecast-list">
+                <!-- Forecast items injected here via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Trigger -->
+    <button id="settings-trigger" class="settings-btn" aria-label="Open Settings">
+        <i data-lucide="settings"></i>
+    </button>
+
+    <!-- Settings Panel -->
+    <aside id="settings-panel" class="settings-panel hidden">
+        <div class="settings-header">
+            <h2>Customize Widget</h2>
+            <button id="close-settings" class="close-btn" aria-label="Close Settings">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        
+        <div class="settings-content">
+            <div class="setting-group">
+                <label for="location-input">Location</label>
+                <div class="search-group">
+                    <input type="text" id="location-input" placeholder="e.g. London, Tokyo...">
+                    <button id="search-btn"><i data-lucide="search"></i></button>
+                </div>
+                <small id="location-status"></small>
+            </div>
+
+            <div class="setting-group">
+                <label for="layout-select">Layout</label>
+                <select id="layout-select">
+                    <option value="vertical">Vertical</option>
+                    <option value="horizontal">Horizontal</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label for="units-select">Units</label>
+                <select id="units-select">
+                    <option value="celsius">Celsius (°C)</option>
+                    <option value="fahrenheit">Fahrenheit (°F)</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label for="theme-select">Theme</label>
+                <select id="theme-select">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="glass">Glassmorphism</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label for="color-input">Accent Color</label>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="color-input" value="#3b82f6">
+                    <span id="color-hex">#3b82f6</span>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="font-select">Font Style</label>
+                <select id="font-select">
+                    <option value="'Inter', sans-serif">Sans-serif (Inter)</option>
+                    <option value="'Roboto', sans-serif">Roboto</option>
+                    <option value="'JetBrains Mono', monospace">Monospace</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label for="radius-select">Corner Radius</label>
+                <select id="radius-select">
+                    <option value="0px">None</option>
+                    <option value="8px">Small (8px)</option>
+                    <option value="16px">Medium (16px)</option>
+                    <option value="24px">Large (24px)</option>
+                </select>
+            </div>
+            
+        </div>
+        
+        <div class="settings-footer">
+            <label for="embed-url">Notion Embed URL</label>
+            <div class="url-copy-group">
+                <input type="text" id="embed-url" readonly />
+                <button id="copy-btn">Copy</button>
+            </div>
+        </div>
+    </aside>
+
+    <script src="script.js"></script>
+</body>
+</html>
