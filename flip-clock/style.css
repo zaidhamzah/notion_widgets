@@ -96,8 +96,8 @@ body {
 
 .overlay-text {
     position: absolute;
-    bottom: 15px;
-    font-size: 16px;
+    bottom: 10px;
+    font-size: 11px;
     font-family: 'Oswald', sans-serif; /* Forcing for the labels */
     font-weight: 600;
     color: var(--card-text);
@@ -107,18 +107,18 @@ body {
 }
 
 .am-pm-overlay {
-    left: 15px;
+    left: 10px;
 }
 
 .day-overlay {
-    right: 15px;
+    right: 10px;
 }
 
 /* Flip Unit (Holding the cards) */
 .flip-unit {
     position: relative;
-    width: 220px; /* Much wider */
-    height: 300px; /* Taller */
+    width: 140px; 
+    height: 190px;
     perspective: 1200px;
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
@@ -136,7 +136,7 @@ body {
     background-color: var(--card-bg);
     color: var(--card-text);
     overflow: hidden;
-    font-size: 200px; /* Massive text */
+    font-size: 130px; 
     font-weight: 600;
     text-align: center;
     transition: background-color 0.4s ease, color 0.4s ease;
@@ -151,8 +151,8 @@ body {
     /* Let the text bounding box define the height */
     line-height: 1; 
     text-align: center;
-    /* Optical correction margin. Oswald still has a thick descender that makes optical centering slightly off. */
-    margin-top: -15px;
+    /* Optical correction margin */
+    margin-top: -10px;
 }
 
 .card-top .digit,
