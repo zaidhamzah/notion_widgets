@@ -42,6 +42,19 @@ body.dark {
   --input-border: #334155;
 }
 
+/* Settings Panel Variables to prevent widget overrides from breaking readability */
+.settings-panel, .settings-btn {
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --card-text: #1e293b;
+}
+
+body.dark .settings-panel, body.dark .settings-btn {
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --card-text: #f8fafc;
+}
+
 /* Reset & Global */
 * {
     box-sizing: border-box;
@@ -519,6 +532,8 @@ select {
 
 input[type="color"] {
     -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
     width: 32px;
     height: 32px;
     border: none;

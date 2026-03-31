@@ -2,6 +2,8 @@
 const DEFAULT_STATE = {
     theme: 'light',
     color: '3b82f6', // Accent color
+    textColor: '',
+    textDimColor: '',
     cardColor: 'ffffff',
     bgColor: 'transparent',
     borderColor: 'e2e8f0',
@@ -33,7 +35,9 @@ const i18n = {
         theme: 'Theme',
         themeLight: 'Light',
         themeDark: 'Dark',
-        textColor: 'Text/Accent Color',
+        textColor: 'Accent Color',
+        primaryTextColor: 'Primary Text Color',
+        secondaryTextColor: 'Secondary Text Color',
         cardColor: 'Card Body Color',
         bgColor: 'Background',
         borderColor: 'Border Color',
@@ -80,7 +84,9 @@ const i18n = {
         theme: 'Tema',
         themeLight: 'Terang',
         themeDark: 'Gelap',
-        textColor: 'Warna Teks/Aksen',
+        textColor: 'Warna Aksen',
+        primaryTextColor: 'Warna Teks Utama',
+        secondaryTextColor: 'Warna Teks Sekunder',
         cardColor: 'Warna Kartu',
         bgColor: 'Latar Belakang',
         borderColor: 'Warna Border',
@@ -131,6 +137,8 @@ function updateLanguageUI() {
         else if (forAttr === 'layout-select') lbl.textContent = lang.layout;
         else if (forAttr === 'theme-select') lbl.textContent = lang.theme;
         else if (forAttr === 'color-input') lbl.textContent = lang.textColor;
+        else if (forAttr === 'text-color-input') lbl.textContent = lang.primaryTextColor;
+        else if (forAttr === 'text-dim-color-input') lbl.textContent = lang.secondaryTextColor;
         else if (forAttr === 'card-color-input') lbl.textContent = lang.cardColor;
         else if (forAttr === 'bg-color-input') lbl.textContent = lang.bgColor;
         else if (forAttr === 'border-color-input') lbl.textContent = lang.borderColor;
@@ -277,6 +285,21 @@ function applyStateToUI() {
 
     // Colors
     root.style.setProperty('--accent-color', formatColor(state.color));
+    
+    if (state.textColor) {
+        root.style.setProperty('--text-primary', formatColor(state.textColor));
+        root.style.setProperty('--card-text', formatColor(state.textColor));
+    } else {
+        root.style.removeProperty('--text-primary');
+        root.style.removeProperty('--card-text');
+    }
+    
+    if (state.textDimColor) {
+        root.style.setProperty('--text-secondary', formatColor(state.textDimColor));
+    } else {
+        root.style.removeProperty('--text-secondary');
+    }
+
     root.style.setProperty('--card-bg', formatColor(state.cardColor));
     root.style.setProperty('--bg-color', formatColor(state.bgColor));
     root.style.setProperty('--card-border', formatColor(state.borderColor));
@@ -299,8 +322,10 @@ function applyStateToUI() {
     weatherWrapper.classList.add(`layout-${state.layout}`);
     
     // Check if embedded
-    if (window.self !== window.top) {
-        settingsTrigger.style.display = 'none';
+    let isEmbedded = false;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('embed') === 'true' || window.self !== window.top) {
+        isEmbedded = true;
     }
 
     // Refresh UI if language changed, using cached data to avoid re-fetch if possible
@@ -444,6 +469,8 @@ function hydrateSettingsUI() {
     
     // Sync Colors (Picker & Text)
     syncColorInput('color', state.color);
+    syncColorInput('text-color', state.textColor);
+    syncColorInput('text-dim-color', state.textDimColor);
     syncColorInput('card-color', state.cardColor);
     syncColorInput('bg-color', state.bgColor);
     syncColorInput('border-color', state.borderColor);
@@ -524,6 +551,8 @@ function attachEventListeners() {
 
     // Color Pickers & Text Inputs
     setupColorBinds('color');
+    setupColorBinds('text-color', 'textColor');
+    setupColorBinds('text-dim-color', 'textDimColor');
     setupColorBinds('card-color', 'cardColor');
     setupColorBinds('bg-color', 'bgColor');
     setupColorBinds('border-color', 'borderColor');
