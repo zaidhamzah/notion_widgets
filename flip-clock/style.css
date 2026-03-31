@@ -12,7 +12,7 @@
   --card-bg: #838e5d; /* Olive green from image */
   --card-text: #ffffff;
   --card-border: rgba(0, 0, 0, 0.05);
-  --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+  --card-shadow: none;
   --line-color: rgba(255, 255, 255, 0.15);
 
   --settings-bg: #ffffff;
@@ -34,7 +34,7 @@ body.dark {
   --card-bg: #4c5336; /* Dark olive */
   --card-text: #ffffff;
   --card-border: #334155;
-  --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  --card-shadow: none;
   --line-color: rgba(255,255,255,0.1);
 
   --settings-bg: #0f172a;
