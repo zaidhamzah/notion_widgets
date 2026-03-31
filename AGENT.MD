@@ -15,12 +15,17 @@ Since widgets are embedded in Notion via frames (`<iframe>`), the widget's confi
 ### Common Standard URL Parameters
 Every widget should ideally support these baseline parameters:
 - `theme`: `light` (default) | `dark` | `system`
-- `color`: Predefined names (e.g., `blue`, `green`, `rose`) or a HEX value without the hash (e.g., `ff5733`)
-- `font`: `sans-serif` (default) | `serif` | `monospace` | or a specific Google Font name
-- `radius`: `none` | `sm` | `md` (default) | `lg` | `full`
+- `color`: Primary text/accent color. Predefined names or a HEX value without the hash (e.g., `3b82f6`).
+- `cardColor`: Color for the main widget cards/surfaces. HEX value without the hash (e.g., `1f2937`).
+- `bgColor`: Background color. HEX value without the hash or `transparent` (default).
+- `borderColor`: Color for card/widget borders. HEX value without the hash (e.g., `000000`).
+- `borderWidth`: `0px` (default) | `1px` | `2px` | `4px`
+- `font`: `sans-serif` (default) | `serif` | `monospace` | or a specific Google Font name (e.g., `inter`, `oswald`)
 - `size`: `sm` | `md` (default) | `lg`
+- `radius`: `none` | `sm` | `md` (default) | `lg` | `full`
+- `language`: `en` (default) | `id` (and any other supported locales)
 
-*Note: Widgets will also have their own specific state parameters (e.g., a clock might have `format=12h|24h`).*
+*Note: Widgets will also have their own specific state parameters (e.g., `<boolean>Toggle=true|false` or `format=12h|24h`).*
 
 ---
 
@@ -53,25 +58,63 @@ Every widget requires a built-in settings interface that allows users to customi
     <!-- General Settings -->
     <div class="setting-group">
       <label for="theme-select">Theme</label>
-      <select id="theme-select">
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </select>
+      <div class="select-wrapper">
+        <select id="theme-select">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label for="color-input">Text/Accent Color</label>
+      <div class="input-row">
+        <input type="color" id="color-picker-input">
+        <input type="text" id="color-input" placeholder="e.g. 3b82f6" maxlength="6">
+      </div>
     </div>
     
-    <!-- Widget Specific Settings Go Here -->
+    <!-- Other layout blocks for cardColor, bgColor, borderColor, borderWidth, language, font, etc. -->
+    
+    <!-- Widget Specific Settings (like toggles) Go Here -->
+    <div class="setting-group checkbox-group">
+      <label class="toggle">
+        <input type="checkbox" id="feature-toggle">
+        <span class="slider"></span>
+      </label>
+      <span class="label-text">Enable Feature</span>
+    </div>
     
   </div>
   
   <div class="settings-footer">
+    <div id="embed-warning" class="embed-warning hidden">
+      ⚠️ Settings changed! You must click Copy below and "Replace" the embed link in Notion to save.
+    </div>
     <label for="embed-url">Notion Embed URL</label>
     <div class="url-copy-group">
       <input type="text" id="embed-url" readonly />
       <button id="copy-btn">Copy</button>
     </div>
+    <p class="help-text">Copy link & paste into Notion as an Embed.</p>
+    
+    <div class="sidebar-credits">
+      <p>Created by <strong>yourname</strong></p>
+      <a href="#" target="_blank" class="donate-btn">
+        ☕ Buy me a coffee / Donate
+      </a>
+    </div>
   </div>
 </aside>
 ```
+
+### Standard Settings UI Dimensions
+To maintain a consistent and compact footprint across all widgets, ensure the settings panel strictly adheres to these CSS dimensions and spacing (as refined in the Flip Clock widget):
+- **Panel Width**: `width: 100%; max-width: 380px;`
+- **Header Padding**: `12px 16px`
+- **Content & Footer Padding**: `16px` (with a `12px` gap between setting groups)
+- **Input/Select Controls**: `padding: 6px 10px; font-size: 0.85rem;`
+- **Labels & Microcopy**: `font-size: 0.75rem;`
 
 ---
 
@@ -95,21 +138,27 @@ Use a standard set of CSS variables inside the widget's stylesheet to make themi
 
 ```css
 :root {
-  --bg-color: #ffffff;
+  --bg-color: transparent;
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --accent-color: #3b82f6;
+  
+  /* Shared Widget Structural Variables */
+  --card-bg: #3b82f6; 
+  --card-border: #000000;
+  --border-width: 0px;
   --border-radius: 12px;
+  
   --font-family: 'Inter', system-ui, sans-serif;
   
   /* Additional tokens */
 }
 
 body.dark {
-  --bg-color: #1f2937;
   --text-primary: #f9fafb;
   --text-secondary: #9ca3af;
   --accent-color: #60a5fa;
+  /* Dark mode overrides if --bg-color or --card-bg are typically unset */
 }
 
 /* Use these variables throughout the widget styling */

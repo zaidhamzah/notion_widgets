@@ -101,11 +101,54 @@
             </div>
 
             <div class="setting-group">
+                <label for="card-color-input">Card Color</label>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="card-color-input" value="#ffffff">
+                    <span id="card-color-hex">#ffffff</span>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="bg-color-input">Background Color</label>
+                <div class="input-row" style="display: flex; gap: 8px;">
+                    <input type="color" id="bg-color-picker" value="#ffffff" title="Pick a color">
+                    <input type="text" id="bg-color-input" placeholder="transparent" style="flex-grow: 1;">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="border-color-input">Border Color</label>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="border-color-input" value="#e5e7eb">
+                    <span id="border-color-hex">#e5e7eb</span>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="border-width-select">Border Width</label>
+                <select id="border-width-select">
+                    <option value="0px">0px (None)</option>
+                    <option value="1px">1px</option>
+                    <option value="2px">2px</option>
+                    <option value="4px">4px</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
                 <label for="font-select">Font Style</label>
                 <select id="font-select">
                     <option value="'Inter', sans-serif">Sans-serif (Inter)</option>
                     <option value="'Roboto', sans-serif">Roboto</option>
                     <option value="'JetBrains Mono', monospace">Monospace</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label for="size-select">Widget Size</label>
+                <select id="size-select">
+                    <option value="sm">Small (sm)</option>
+                    <option value="md">Medium (md)</option>
+                    <option value="lg">Large (lg)</option>
                 </select>
             </div>
 
@@ -116,6 +159,15 @@
                     <option value="8px">Small (8px)</option>
                     <option value="16px">Medium (16px)</option>
                     <option value="24px">Large (24px)</option>
+                    <option value="9999px">Full</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label for="language-select">Language</label>
+                <select id="language-select">
+                    <option value="en">English (en)</option>
+                    <option value="id">Indonesian (id)</option>
                 </select>
             </div>
             
