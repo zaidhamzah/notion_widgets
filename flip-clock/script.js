@@ -35,6 +35,7 @@ const els = {
     // Embed Generator
     embedUrl: document.getElementById('embed-url'),
     copyBtn: document.getElementById('copy-btn'),
+    embedWarning: document.getElementById('embed-warning'),
     
     // Clock UI
     clockContainer: document.getElementById('clock-container'),
@@ -47,6 +48,8 @@ const els = {
 
 // --- SETTINGS MANAGER ---
 
+let isEmbedded = false;
+
 function initSettings() {
     // 1. Parse URL Parameters
     const params = new URLSearchParams(window.location.search);
@@ -54,7 +57,7 @@ function initSettings() {
     // Check if embedded in Notion (hide settings button if so, optionally)
     // For now we keep it, but make it less obtrusive if we want.
     if (params.get('embed') === 'true' || window.self !== window.top) {
-        // Notion Embed environment
+        isEmbedded = true;
     }
 
     objectKeys(DEFAULT_STATE).forEach(key => {
@@ -151,6 +154,10 @@ function updateState(key, value) {
     window.history.replaceState({}, '', url);
     
     generateEmbedUrl();
+    
+    if (isEmbedded && els.embedWarning) {
+        els.embedWarning.classList.remove('hidden');
+    }
 }
 
 function generateEmbedUrl() {
