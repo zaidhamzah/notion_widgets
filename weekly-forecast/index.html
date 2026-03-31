@@ -1,183 +1,231 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weekly Forecast Widget</title>
+    <!-- Use Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <!-- Widget Content -->
     <div id="widget-root">
-        <div class="weather-container">
-            <div class="current-weather">
-                <div class="location-info">
-                    <h2 id="location-name" class="text-uppercase">LOADING...</h2>
-                    <div class="weather-subtitle">WEATHER</div>
-                </div>
-                
-                <div id="today-icon" class="main-icon"></div>
-                
-                <div class="today-details">
-                    <div class="today-main">
-                        <div class="temperature-big">
-                            <span id="today-temp">--</span>°<span class="unit-label">C</span>
-                        </div>
-                    </div>
-                    <div class="today-desc" id="today-desc">--</div>
-                    <div class="today-hl">
-                        H: <span id="today-high">--</span>° / L: <span id="today-low">--</span>°
-                    </div>
-                </div>
+        <div class="weather-wrapper" id="weather-wrapper">
+            <!-- Loading State -->
+            <div id="loading-state" class="state-container">
+                <svg class="spinner" viewBox="0 0 50 50">
+                    <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                </svg>
+                <p>Loading weather...</p>
             </div>
 
-            <div class="forecast-list" id="forecast-list">
-                <!-- Forecast items injected here via JS -->
+            <!-- Error State -->
+            <div id="error-state" class="state-container hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <p id="error-message">Could not fetch weather.</p>
+            </div>
+
+            <!-- Weather Content -->
+            <div id="weather-content" class="weather-content hidden">
+                <!-- Current Weather -->
+                <div class="current-weather card">
+                    <div class="current-header">
+                        <div class="location-name">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="loc-icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            <span id="display-location">Loading...</span>
+                        </div>
+                        <div class="current-date" id="display-date">Today</div>
+                    </div>
+                    <div class="current-body">
+                        <div class="current-temp-group">
+                            <span class="current-emoji" id="current-icon">☀️</span>
+                            <div class="temp-display">
+                                <span class="current-temp" id="current-temp">--</span>
+                                <span class="current-unit" id="current-unit">°C</span>
+                            </div>
+                        </div>
+                        <div class="current-desc" id="current-desc">Clear sky</div>
+                        <div class="current-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Wind</span>
+                                <span class="detail-value" id="current-wind">-- km/h</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Humidity</span>
+                                <span class="detail-value" id="current-humidity">--%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forecast -->
+                <div class="forecast-container" id="forecast-container">
+                    <!-- Forecast cards will be injected here via JS -->
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Settings Trigger -->
+    <!-- Settings UI -->
     <button id="settings-trigger" class="settings-btn" aria-label="Open Settings">
-        <i data-lucide="settings"></i>
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </button>
 
-    <!-- Settings Panel -->
+    <div id="settings-backdrop" class="settings-backdrop hidden"></div>
     <aside id="settings-panel" class="settings-panel hidden">
         <div class="settings-header">
-            <h2>Customize Widget</h2>
+            <h2>Customize</h2>
             <button id="close-settings" class="close-btn" aria-label="Close Settings">
-                <i data-lucide="x"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
         
         <div class="settings-content">
             <div class="setting-group">
                 <label for="location-input">Location</label>
-                <div class="search-group">
-                    <input type="text" id="location-input" placeholder="e.g. London, Tokyo...">
-                    <button id="search-btn"><i data-lucide="search"></i></button>
+                <input type="text" id="location-input" placeholder="e.g. New York, Tokyo">
+            </div>
+
+            <div class="setting-group">
+                <label for="unit-select">Temperature Unit</label>
+                <div class="select-wrapper">
+                    <select id="unit-select">
+                        <option value="celsius">Celsius (°C)</option>
+                        <option value="fahrenheit">Fahrenheit (°F)</option>
+                    </select>
                 </div>
-                <small id="location-status"></small>
             </div>
 
             <div class="setting-group">
-                <label for="layout-select">Layout</label>
-                <select id="layout-select">
-                    <option value="vertical">Vertical</option>
-                    <option value="horizontal">Horizontal</option>
-                </select>
+                <label for="layout-select">Widget Layout</label>
+                <div class="select-wrapper">
+                    <select id="layout-select">
+                        <option value="horizontal">Horizontal Row</option>
+                        <option value="vertical">Vertical Stack</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="setting-group">
-                <label for="units-select">Units</label>
-                <select id="units-select">
-                    <option value="celsius">Celsius (°C)</option>
-                    <option value="fahrenheit">Fahrenheit (°F)</option>
-                </select>
-            </div>
+            <hr class="settings-divider">
 
             <div class="setting-group">
                 <label for="theme-select">Theme</label>
-                <select id="theme-select">
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="glass">Glassmorphism</option>
-                </select>
+                <div class="select-wrapper">
+                    <select id="theme-select">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
             </div>
-
+            
             <div class="setting-group">
-                <label for="color-input">Accent Color</label>
-                <div class="color-picker-wrapper">
-                    <input type="color" id="color-input" value="#3b82f6">
-                    <span id="color-hex">#3b82f6</span>
+                <label for="color-input">Text/Accent Color</label>
+                <div class="input-row">
+                    <input type="color" id="color-picker-input">
+                    <input type="text" id="color-input" placeholder="e.g. 3b82f6" maxlength="6">
                 </div>
             </div>
 
             <div class="setting-group">
-                <label for="card-color-input">Card Color</label>
-                <div class="color-picker-wrapper">
-                    <input type="color" id="card-color-input" value="#ffffff">
-                    <span id="card-color-hex">#ffffff</span>
+                <label for="card-color-input">Card Body Color</label>
+                <div class="input-row">
+                    <input type="color" id="card-color-picker-input">
+                    <input type="text" id="card-color-input" placeholder="e.g. 1f2937" maxlength="6">
                 </div>
             </div>
 
             <div class="setting-group">
-                <label for="bg-color-input">Background Color</label>
-                <div class="input-row" style="display: flex; gap: 8px;">
-                    <input type="color" id="bg-color-picker" value="#ffffff" title="Pick a color">
-                    <input type="text" id="bg-color-input" placeholder="transparent" style="flex-grow: 1;">
+                <label for="bg-color-input">Background</label>
+                <div class="input-row">
+                    <input type="color" id="bg-color-picker-input">
+                    <input type="text" id="bg-color-input" placeholder="e.g. ffffff or transparent">
                 </div>
             </div>
 
             <div class="setting-group">
                 <label for="border-color-input">Border Color</label>
-                <div class="color-picker-wrapper">
-                    <input type="color" id="border-color-input" value="#e5e7eb">
-                    <span id="border-color-hex">#e5e7eb</span>
+                <div class="input-row">
+                    <input type="color" id="border-color-picker-input">
+                    <input type="text" id="border-color-input" placeholder="e.g. 000000" maxlength="6">
                 </div>
             </div>
 
             <div class="setting-group">
                 <label for="border-width-select">Border Width</label>
-                <select id="border-width-select">
-                    <option value="0px">0px (None)</option>
-                    <option value="1px">1px</option>
-                    <option value="2px">2px</option>
-                    <option value="4px">4px</option>
-                </select>
+                <div class="select-wrapper">
+                    <select id="border-width-select">
+                        <option value="0px">None</option>
+                        <option value="1px">Small (1px)</option>
+                        <option value="2px">Medium (2px)</option>
+                        <option value="4px">Large (4px)</option>
+                    </select>
+                </div>
             </div>
 
             <div class="setting-group">
                 <label for="font-select">Font Style</label>
-                <select id="font-select">
-                    <option value="'Inter', sans-serif">Sans-serif (Inter)</option>
-                    <option value="'Roboto', sans-serif">Roboto</option>
-                    <option value="'JetBrains Mono', monospace">Monospace</option>
-                </select>
+                <div class="select-wrapper">
+                    <select id="font-select">
+                        <option value="inter">Inter (Modern)</option>
+                        <option value="oswald">Oswald (Industrial)</option>
+                        <option value="spacemono">Space Mono (Tech)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <label for="size-select">Scale / Size</label>
+                <div class="select-wrapper">
+                    <select id="size-select">
+                        <option value="sm">Small</option>
+                        <option value="md">Medium</option>
+                        <option value="lg">Large</option>
+                    </select>
+                </div>
             </div>
 
             <div class="setting-group">
-                <label for="size-select">Widget Size</label>
-                <select id="size-select">
-                    <option value="sm">Small (sm)</option>
-                    <option value="md">Medium (md)</option>
-                    <option value="lg">Large (lg)</option>
-                </select>
-            </div>
-
-            <div class="setting-group">
-                <label for="radius-select">Corner Radius</label>
-                <select id="radius-select">
-                    <option value="0px">None</option>
-                    <option value="8px">Small (8px)</option>
-                    <option value="16px">Medium (16px)</option>
-                    <option value="24px">Large (24px)</option>
-                    <option value="9999px">Full</option>
-                </select>
+                <label for="radius-select">Card Radius</label>
+                <div class="select-wrapper">
+                    <select id="radius-select">
+                        <option value="none">None</option>
+                        <option value="sm">Small</option>
+                        <option value="md">Medium</option>
+                        <option value="lg">Large</option>
+                        <option value="full">Maximum</option>
+                    </select>
+                </div>
             </div>
 
             <div class="setting-group">
                 <label for="language-select">Language</label>
-                <select id="language-select">
-                    <option value="en">English (en)</option>
-                    <option value="id">Indonesian (id)</option>
-                </select>
+                <div class="select-wrapper">
+                    <select id="language-select">
+                        <option value="en">English</option>
+                        <option value="id">Indonesian</option>
+                    </select>
+                </div>
             </div>
-            
         </div>
         
         <div class="settings-footer">
+            <div id="embed-warning" class="embed-warning hidden">
+                ⚠️ Settings changed! You must click Copy below and "Replace" the embed link in Notion to save.
+            </div>
             <label for="embed-url">Notion Embed URL</label>
             <div class="url-copy-group">
                 <input type="text" id="embed-url" readonly />
                 <button id="copy-btn">Copy</button>
+            </div>
+            <p class="help-text">Copy link & paste into Notion as an Embed.</p>
+            
+            <div class="sidebar-credits">
+                <p>Created by <strong>zaidhamzah</strong></p>
+                <a href="#" target="_blank" class="donate-btn">
+                    ☕ Buy me a coffee / Donate
+                </a>
             </div>
         </div>
     </aside>

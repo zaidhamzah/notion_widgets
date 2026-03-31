@@ -1,438 +1,595 @@
-// --- State Management ---
-const defaultState = {
-  theme: 'light',
-  color: '#3b82f6',
-  cardColor: '#ffffff',
-  bgColor: 'transparent',
-  borderColor: '#e5e7eb',
-  borderWidth: '1px',
-  font: "'Inter', sans-serif",
-  size: 'md',
-  radius: '16px',
-  language: 'en',
-  locationName: 'London',
-  lat: 51.5085,
-  lon: -0.1257,
-  units: 'celsius', // 'celsius' or 'fahrenheit'
-  layout: 'vertical' // 'vertical' or 'horizontal'
-};
-
-let state = { ...defaultState };
-
-// --- Weather Code Mapping (Open-Meteo to Lucide Icons) ---
-const weatherMapping = {
-  0: { icon: 'sun', desc: 'Clear sky' },
-  1: { icon: 'sun-dim', desc: 'Mainly clear' },
-  2: { icon: 'cloud-sun', desc: 'Partly cloudy' },
-  3: { icon: 'cloud', desc: 'Overcast' },
-  45: { icon: 'cloud-fog', desc: 'Fog' },
-  48: { icon: 'cloud-fog', desc: 'Depositing rime fog' },
-  51: { icon: 'cloud-drizzle', desc: 'Light drizzle' },
-  53: { icon: 'cloud-drizzle', desc: 'Moderate drizzle' },
-  55: { icon: 'cloud-drizzle', desc: 'Dense drizzle' },
-  56: { icon: 'cloud-drizzle', desc: 'Light freezing drizzle' },
-  57: { icon: 'cloud-drizzle', desc: 'Dense freezing drizzle' },
-  61: { icon: 'cloud-rain', desc: 'Slight rain' },
-  63: { icon: 'cloud-rain', desc: 'Moderate rain' },
-  65: { icon: 'cloud-rain', desc: 'Heavy rain' },
-  66: { icon: 'cloud-snow', desc: 'Light freezing rain' },
-  67: { icon: 'cloud-snow', desc: 'Heavy freezing rain' },
-  71: { icon: 'snowflake', desc: 'Slight snow' },
-  73: { icon: 'snowflake', desc: 'Moderate snow' },
-  75: { icon: 'snowflake', desc: 'Heavy snow' },
-  77: { icon: 'snowflake', desc: 'Snow grains' },
-  80: { icon: 'cloud-rain', desc: 'Slight rain showers' },
-  81: { icon: 'cloud-rain', desc: 'Moderate rain showers' },
-  82: { icon: 'cloud-rain', desc: 'Violent rain showers' },
-  85: { icon: 'cloud-snow', desc: 'Slight snow showers' },
-  86: { icon: 'cloud-snow', desc: 'Heavy snow showers' },
-  95: { icon: 'cloud-lightning', desc: 'Thunderstorm' },
-  96: { icon: 'cloud-lightning', desc: 'Thunderstorm with slight hail' },
-  99: { icon: 'cloud-lightning', desc: 'Thunderstorm with heavy hail' }
-};
-
-function getWeatherInfo(code) {
-  return weatherMapping[code] || { icon: 'cloud', desc: 'Unknown' };
-}
-
-// --- Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
-  parseURLParameters();
-  initializeUI();
-  applyStateToCSS();
-  fetchWeatherData();
-  updateEmbedURL();
-  
-  // Initialize Lucide icons
-  lucide.createIcons();
-});
-
-function parseURLParameters() {
-  const params = new URLSearchParams(window.location.search);
-  
-  if (params.has('theme')) state.theme = params.get('theme');
-  if (params.has('color')) state.color = '#' + params.get('color'); // hex without hash
-  if (params.has('cardColor')) state.cardColor = '#' + params.get('cardColor');
-  if (params.has('bgColor')) state.bgColor = params.get('bgColor') === 'transparent' ? 'transparent' : '#' + params.get('bgColor');
-  if (params.has('borderColor')) state.borderColor = '#' + params.get('borderColor');
-  if (params.has('borderWidth')) state.borderWidth = params.get('borderWidth');
-  if (params.has('font')) state.font = decodeURIComponent(params.get('font'));
-  if (params.has('size')) state.size = params.get('size');
-  if (params.has('radius')) state.radius = params.get('radius');
-  if (params.has('language')) state.language = params.get('language');
-  if (params.has('locationName')) state.locationName = decodeURIComponent(params.get('locationName'));
-  if (params.has('lat')) state.lat = parseFloat(params.get('lat'));
-  if (params.has('lon')) state.lon = parseFloat(params.get('lon'));
-  if (params.has('units')) state.units = params.get('units');
-  if (params.has('layout')) state.layout = params.get('layout');
-}
-
-function updateURLParameter(key, value) {
-  const url = new URL(window.location);
-  if (value !== undefined && value !== null && value !== '') {
-    if ((key === 'color' || key === 'cardColor' || key === 'borderColor' || key === 'bgColor') && value.toString().startsWith('#')) {
-      url.searchParams.set(key, value.substring(1)); // Remove hash for URL
-    } else {
-      url.searchParams.set(key, value);
-    }
-  } else {
-    url.searchParams.delete(key);
-  }
-  window.history.replaceState({}, '', url);
-  updateEmbedURL();
-}
-
-function updateEmbedURL() {
-  const embedInput = document.getElementById('embed-url');
-  embedInput.value = window.location.href;
-}
-
-function applyStateToCSS() {
-  const root = document.documentElement;
-  
-  // Apply Theme
-  document.body.className = '';
-  if (state.theme === 'dark') {
-    document.body.classList.add('dark');
-  } else if (state.theme === 'glass') {
-    document.body.classList.add('glass');
-    // We could check if system preference is dark to add dark-glass
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-       document.body.classList.add('dark-glass');
-    }
-  }
-
-  // Apply Variables
-  root.style.setProperty('--accent-color', state.color);
-  root.style.setProperty('--card-bg', state.cardColor);
-  root.style.setProperty('--bg-color', state.bgColor);
-  root.style.setProperty('--card-border', state.borderColor);
-  root.style.setProperty('--border-width', state.borderWidth);
-  root.style.setProperty('--font-family', state.font);
-  root.style.setProperty('--border-radius', state.radius);
-  
-  // Apply Size
-  if (state.size === 'sm') root.style.zoom = '0.85';
-  else if (state.size === 'lg') root.style.zoom = '1.15';
-  else root.style.zoom = '1';
-
-  // Apply Layout
-  const widgetRoot = document.getElementById('widget-root');
-  if (state.layout === 'horizontal') {
-    widgetRoot.classList.add('layout-horizontal');
-  } else {
-    widgetRoot.classList.remove('layout-horizontal');
-  }
-}
-
-// --- API Calls ---
-
-async function geocodeLocation(name) {
-  const statusEl = document.getElementById('location-status');
-  statusEl.textContent = 'Searching...';
-  
-  try {
-    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=en&format=json`);
-    const data = await res.json();
+// State Management
+const DEFAULT_STATE = {
+    theme: 'light',
+    color: '3b82f6', // Accent color
+    cardColor: 'ffffff',
+    bgColor: 'transparent',
+    borderColor: 'e2e8f0',
+    borderWidth: '0px',
+    font: 'inter',
+    size: 'md',
+    radius: 'md',
+    language: 'en',
     
-    if (data.results && data.results.length > 0) {
-      const result = data.results[0];
-      state.locationName = result.name;
-      if (result.admin1) state.locationName += `, ${result.admin1}`;
-      state.lat = result.latitude;
-      state.lon = result.longitude;
-      
-      // Update state and refresh weather
-      updateURLParameter('locationName', state.locationName);
-      updateURLParameter('lat', state.lat);
-      updateURLParameter('lon', state.lon);
-      
-      document.getElementById('location-input').value = state.locationName;
-      document.getElementById('location-name').textContent = state.locationName;
-      statusEl.textContent = 'Location found!';
-      setTimeout(() => statusEl.textContent = '', 2000);
-      
-      fetchWeatherData();
-    } else {
-      statusEl.textContent = 'Location not found.';
+    // Widget Specific
+    location: 'New York',
+    unit: 'celsius', // celsius | fahrenheit
+    layout: 'horizontal' // horizontal | vertical
+};
+
+const state = { ...DEFAULT_STATE };
+let weatherDataCache = null;
+
+const i18n = {
+    en: {
+        title: 'Customize',
+        location: 'Location',
+        unit: 'Temperature Unit',
+        layout: 'Widget Layout',
+        layoutHoriz: 'Horizontal Row',
+        layoutVert: 'Vertical Stack',
+        unitC: 'Celsius (°C)',
+        unitF: 'Fahrenheit (°F)',
+        theme: 'Theme',
+        themeLight: 'Light',
+        themeDark: 'Dark',
+        textColor: 'Text/Accent Color',
+        cardColor: 'Card Body Color',
+        bgColor: 'Background',
+        borderColor: 'Border Color',
+        borderWidth: 'Border Width',
+        borderNone: 'None',
+        borderSm: 'Small (1px)',
+        borderMd: 'Medium (2px)',
+        borderLg: 'Large (4px)',
+        fontStyle: 'Font Style',
+        fontInter: 'Inter (Modern)',
+        fontOswald: 'Oswald (Industrial)',
+        fontSpace: 'Space Mono (Tech)',
+        size: 'Scale / Size',
+        sizeSm: 'Small',
+        sizeMd: 'Medium',
+        sizeLg: 'Large',
+        radius: 'Card Radius',
+        radiusNone: 'None',
+        radiusSm: 'Small',
+        radiusMd: 'Medium',
+        radiusLg: 'Large',
+        radiusMax: 'Maximum',
+        language: 'Language',
+        langEn: 'English',
+        langId: 'Indonesian',
+        embedWarning: '⚠️ Settings changed! You must click Copy below and "Replace" the embed link in Notion to save.',
+        embedLabel: 'Notion Embed URL',
+        copyBtn: 'Copy',
+        copiedBtn: 'Copied!',
+        helpText: 'Copy link & paste into Notion as an Embed.',
+        credits: 'Created by ',
+        wind: 'Wind',
+        humidity: 'Humidity'
+    },
+    id: {
+        title: 'Kustomisasi',
+        location: 'Lokasi',
+        unit: 'Unit Suhu',
+        layout: 'Tata Letak Widget',
+        layoutHoriz: 'Baris Horizontal',
+        layoutVert: 'Tumpukan Vertikal',
+        unitC: 'Celsius (°C)',
+        unitF: 'Fahrenheit (°F)',
+        theme: 'Tema',
+        themeLight: 'Terang',
+        themeDark: 'Gelap',
+        textColor: 'Warna Teks/Aksen',
+        cardColor: 'Warna Kartu',
+        bgColor: 'Latar Belakang',
+        borderColor: 'Warna Border',
+        borderWidth: 'Lebar Border',
+        borderNone: 'Tidak Ada',
+        borderSm: 'Kecil (1px)',
+        borderMd: 'Sedang (2px)',
+        borderLg: 'Besar (4px)',
+        fontStyle: 'Gaya Huruf',
+        fontInter: 'Inter (Modern)',
+        fontOswald: 'Oswald (Industrial)',
+        fontSpace: 'Space Mono (Tech)',
+        size: 'Ukuran',
+        sizeSm: 'Kecil',
+        sizeMd: 'Sedang',
+        sizeLg: 'Besar',
+        radius: 'Radius Kartu',
+        radiusNone: 'Tidak Ada',
+        radiusSm: 'Kecil',
+        radiusMd: 'Sedang',
+        radiusLg: 'Besar',
+        radiusMax: 'Maksimum',
+        language: 'Bahasa',
+        langEn: 'Inggris',
+        langId: 'Indonesia',
+        embedWarning: '⚠️ Pengaturan berubah! Anda harus mengeklik Salin di bawah dan "Ganti" tautan sematan di Notion untuk menyimpan.',
+        embedLabel: 'Tautan Sematan Notion',
+        copyBtn: 'Salin',
+        copiedBtn: 'Tersalin!',
+        helpText: 'Salin tautan & tempel ke Notion sebagai Sematan.',
+        credits: 'Dibuat oleh ',
+        wind: 'Angin',
+        humidity: 'Kelembapan'
     }
-  } catch (err) {
-    statusEl.textContent = 'Error searching location.';
-    console.error(err);
-  }
+};
+
+function updateLanguageUI() {
+    const lang = i18n[state.language] || i18n['en'];
+
+    const headerTitle = document.querySelector('.settings-header h2');
+    if (headerTitle) headerTitle.textContent = lang.title;
+
+    const labels = document.querySelectorAll('.setting-group label:not(.toggle)');
+    labels.forEach(lbl => {
+        const forAttr = lbl.getAttribute('for');
+        if (forAttr === 'location-input') lbl.textContent = lang.location;
+        else if (forAttr === 'unit-select') lbl.textContent = lang.unit;
+        else if (forAttr === 'layout-select') lbl.textContent = lang.layout;
+        else if (forAttr === 'theme-select') lbl.textContent = lang.theme;
+        else if (forAttr === 'color-input') lbl.textContent = lang.textColor;
+        else if (forAttr === 'card-color-input') lbl.textContent = lang.cardColor;
+        else if (forAttr === 'bg-color-input') lbl.textContent = lang.bgColor;
+        else if (forAttr === 'border-color-input') lbl.textContent = lang.borderColor;
+        else if (forAttr === 'border-width-select') lbl.textContent = lang.borderWidth;
+        else if (forAttr === 'font-select') lbl.textContent = lang.fontStyle;
+        else if (forAttr === 'size-select') lbl.textContent = lang.size;
+        else if (forAttr === 'radius-select') lbl.textContent = lang.radius;
+        else if (forAttr === 'language-select') lbl.textContent = lang.language;
+    });
+
+    const setOptionLabel = (selectId, value, text) => {
+        const opt = document.querySelector(`#${selectId} option[value="${value}"]`);
+        if (opt) opt.textContent = text;
+    };
+
+    setOptionLabel('unit-select', 'celsius', lang.unitC);
+    setOptionLabel('unit-select', 'fahrenheit', lang.unitF);
+    setOptionLabel('layout-select', 'horizontal', lang.layoutHoriz);
+    setOptionLabel('layout-select', 'vertical', lang.layoutVert);
+    setOptionLabel('theme-select', 'light', lang.themeLight);
+    setOptionLabel('theme-select', 'dark', lang.themeDark);
+    setOptionLabel('border-width-select', '0px', lang.borderNone);
+    setOptionLabel('border-width-select', '1px', lang.borderSm);
+    setOptionLabel('border-width-select', '2px', lang.borderMd);
+    setOptionLabel('border-width-select', '4px', lang.borderLg);
+    setOptionLabel('font-select', 'inter', lang.fontInter);
+    setOptionLabel('font-select', 'oswald', lang.fontOswald);
+    setOptionLabel('font-select', 'spacemono', lang.fontSpace);
+    setOptionLabel('size-select', 'sm', lang.sizeSm);
+    setOptionLabel('size-select', 'md', lang.sizeMd);
+    setOptionLabel('size-select', 'lg', lang.sizeLg);
+    setOptionLabel('radius-select', 'none', lang.radiusNone);
+    setOptionLabel('radius-select', 'sm', lang.radiusSm);
+    setOptionLabel('radius-select', 'md', lang.radiusMd);
+    setOptionLabel('radius-select', 'lg', lang.radiusLg);
+    setOptionLabel('radius-select', 'full', lang.radiusMax);
+    setOptionLabel('language-select', 'en', lang.langEn);
+    setOptionLabel('language-select', 'id', lang.langId);
+
+    if (embedWarning) embedWarning.textContent = lang.embedWarning;
+    const embedLabel = document.querySelector('label[for="embed-url"]');
+    if (embedLabel) embedLabel.textContent = lang.embedLabel;
+    if (copyBtn && !copyBtn.textContent.includes('!') && !copyBtn.textContent.includes('Tersalin')) copyBtn.textContent = lang.copyBtn;
+    const helpText = document.querySelector('.help-text');
+    if (helpText) helpText.textContent = lang.helpText;
+
+    const creditP = document.querySelector('.sidebar-credits p');
+    if (creditP) {
+        creditP.innerHTML = `${lang.credits} <strong>zaidhamzah</strong>`;
+    }
+}
+
+// SVG Icons that inherit color via currentColor
+const ICONS = {
+    sun: '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M5 5l1.5 1.5"/><path d="M17.5 17.5L19 19"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M5 19l1.5-1.5"/><path d="M17.5 5.5L19 4"/></svg>',
+    cloudSun: '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2"/><path d="M5 5l1.5 1.5"/><path d="M19 4l-1.5 1.5"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M12 20h.01"/><path d="M17 18h2a3 3 0 0 0 0-6 4 4 0 0 0-7.88-1A2.5 2.5 0 0 0 5 13.5v.5"/></svg>',
+    cloud: '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>',
+    cloudRain: '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>',
+    cloudSnow: '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 15h.01"/><path d="M8 19h.01"/><path d="M12 17h.01"/><path d="M12 21h.01"/><path d="M16 15h.01"/><path d="M16 19h.01"/></svg>',
+    cloudLightning: '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/></svg>',
+    cloudFog: '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 17H7"/><path d="M17 21H8"/></svg>'
+};
+
+// Weather Icons Map (WMO Weather interpretation codes)
+const WEATHER_CODES = {
+    0: { id: 'Cerah', en: 'Clear sky', icon: ICONS.sun },
+    1: { id: 'Umumnya Cerah', en: 'Mainly clear', icon: ICONS.cloudSun },
+    2: { id: 'Berawan Sebagian', en: 'Partly cloudy', icon: ICONS.cloudSun },
+    3: { id: 'Mendung', en: 'Overcast', icon: ICONS.cloud },
+    45: { id: 'Berkabut', en: 'Fog', icon: ICONS.cloudFog },
+    48: { id: 'Kabut Es', en: 'Depositing rime fog', icon: ICONS.cloudFog },
+    51: { id: 'Gerimis Ringan', en: 'Drizzle: Light', icon: ICONS.cloudRain },
+    53: { id: 'Gerimis Sedang', en: 'Drizzle: Moderate', icon: ICONS.cloudRain },
+    55: { id: 'Gerimis Lebat', en: 'Drizzle: Dense intensity', icon: ICONS.cloudRain },
+    56: { id: 'Gerimis Beku Ringan', en: 'Freezing Drizzle: Light', icon: ICONS.cloudRain },
+    57: { id: 'Gerimis Beku Lebat', en: 'Freezing Drizzle: Dense', icon: ICONS.cloudRain },
+    61: { id: 'Hujan Ringan', en: 'Rain: Slight', icon: ICONS.cloudRain },
+    63: { id: 'Hujan Sedang', en: 'Rain: Moderate', icon: ICONS.cloudRain },
+    65: { id: 'Hujan Lebat', en: 'Rain: Heavy', icon: ICONS.cloudRain },
+    66: { id: 'Hujan Beku Ringan', en: 'Freezing Rain: Light', icon: ICONS.cloudRain },
+    67: { id: 'Hujan Beku Lebat', en: 'Freezing Rain: Heavy', icon: ICONS.cloudRain },
+    71: { id: 'Salju Ringan', en: 'Snow fall: Slight', icon: ICONS.cloudSnow },
+    73: { id: 'Salju Sedang', en: 'Snow fall: Moderate', icon: ICONS.cloudSnow },
+    75: { id: 'Salju Lebat', en: 'Snow fall: Heavy', icon: ICONS.cloudSnow },
+    77: { id: 'Hujan Salju', en: 'Snow grains', icon: ICONS.cloudSnow },
+    80: { id: 'Hujan Sore', en: 'Rain showers: Slight', icon: ICONS.cloudRain },
+    81: { id: 'Hujan Sore Sedang', en: 'Rain showers: Moderate', icon: ICONS.cloudRain },
+    82: { id: 'Hujan Sore Lebat', en: 'Rain showers: Violent', icon: ICONS.cloudLightning },
+    85: { id: 'Hujan Salju Ringan', en: 'Snow showers slight', icon: ICONS.cloudSnow },
+    86: { id: 'Hujan Salju Lebat', en: 'Snow showers heavy', icon: ICONS.cloudSnow },
+    95: { id: 'Badai Petir', en: 'Thunderstorm: Slight or moderate', icon: ICONS.cloudLightning },
+    96: { id: 'Badai Petir Hujan Es Ringan', en: 'Thunderstorm with slight hail', icon: ICONS.cloudLightning },
+    99: { id: 'Badai Petir Hujan Es Lebat', en: 'Thunderstorm with heavy hail', icon: ICONS.cloudLightning }
+};
+
+// DOM Elements
+const body = document.body;
+const root = document.querySelector(':root');
+const weatherWrapper = document.getElementById('weather-wrapper');
+const loadingState = document.getElementById('loading-state');
+const errorState = document.getElementById('error-state');
+const errorMessage = document.getElementById('error-message');
+const weatherContent = document.getElementById('weather-content');
+
+// Settings Elements
+const settingsTrigger = document.getElementById('settings-trigger');
+const settingsPanel = document.getElementById('settings-panel');
+const settingsBackdrop = document.getElementById('settings-backdrop');
+const closeSettingsBtn = document.getElementById('close-settings');
+const embedUrlInput = document.getElementById('embed-url');
+const copyBtn = document.getElementById('copy-btn');
+const embedWarning = document.getElementById('embed-warning');
+
+// Setup function
+function init() {
+    parseURLToState();
+    applyStateToUI();
+    hydrateSettingsUI();
+    attachEventListeners();
+    fetchWeatherData();
+}
+
+function parseURLToState() {
+    const params = new URLSearchParams(window.location.search);
+    for (const key in DEFAULT_STATE) {
+        if (params.has(key)) {
+            let val = params.get(key);
+            // Decode URI safely
+            state[key] = decodeURIComponent(val);
+        }
+    }
+}
+
+// Applies state configuration immediately to CSS and layout
+function applyStateToUI() {
+    updateLanguageUI();
+    
+    // Theme
+    if (state.theme === 'dark') {
+        body.classList.add('dark');
+    } else {
+        body.classList.remove('dark');
+    }
+
+    // Colors
+    root.style.setProperty('--accent-color', formatColor(state.color));
+    root.style.setProperty('--card-bg', formatColor(state.cardColor));
+    root.style.setProperty('--bg-color', formatColor(state.bgColor));
+    root.style.setProperty('--card-border', formatColor(state.borderColor));
+    root.style.setProperty('--border-width', state.borderWidth);
+
+    // Font Style
+    body.className = body.className.replace(/\bfont-\S+/g, ''); // clear old
+    body.classList.add(`font-${state.font}`);
+
+    // Size Scale
+    body.className = body.className.replace(/\bsize-\S+/g, '');
+    body.classList.add(`size-${state.size}`);
+
+    // Card Radius
+    body.className = body.className.replace(/\bradius-\S+/g, '');
+    body.classList.add(`radius-${state.radius}`);
+    
+    // Layout
+    weatherWrapper.className = 'weather-wrapper';
+    weatherWrapper.classList.add(`layout-${state.layout}`);
+    
+    // Check if embedded
+    if (window.self !== window.top) {
+        settingsTrigger.style.display = 'none';
+    }
+
+    // Refresh UI if language changed, using cached data to avoid re-fetch if possible
+    if (weatherDataCache) {
+        updateWeatherUI(weatherDataCache);
+    }
+}
+
+function formatColor(val) {
+    if (val === 'transparent') return val;
+    return val.startsWith('#') ? val : `#${val}`;
 }
 
 async function fetchWeatherData() {
-  document.getElementById('location-name').textContent = state.locationName;
-  
-  const tempUnitUrl = state.units === 'fahrenheit' ? '&temperature_unit=fahrenheit' : '';
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${state.lat}&longitude=${state.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&current_weather=true&timezone=auto${tempUnitUrl}`;
-  
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
+    showLoading();
     
-    renderWeather(data);
-  } catch (err) {
-    console.error('Error fetching weather', err);
-    document.getElementById('location-name').textContent = 'Error Loading Data';
-  }
-}
-
-function renderWeather(data) {
-  // Current Weather
-  const current = data.current_weather;
-  const todayMax = data.daily.temperature_2m_max[0];
-  const todayMin = data.daily.temperature_2m_min[0];
-  const weatherInfo = getWeatherInfo(current.weathercode);
-
-  document.getElementById('today-temp').textContent = Math.round(current.temperature);
-  document.getElementById('today-desc').textContent = weatherInfo.desc;
-  document.getElementById('today-high').textContent = Math.round(todayMax);
-  document.getElementById('today-low').textContent = Math.round(todayMin);
-  
-  document.querySelectorAll('.unit-label').forEach(el => {
-    el.textContent = state.units === 'fahrenheit' ? 'F' : 'C';
-  });
-
-  const todayIconEl = document.getElementById('today-icon');
-  todayIconEl.innerHTML = `<i data-lucide="${weatherInfo.icon}"></i>`;
-
-  // For weather subtitle
-  const subtitleEl = document.querySelector('.weather-subtitle');
-  if (subtitleEl) {
-    subtitleEl.textContent = state.language === 'id' ? 'CUACA' : 'WEATHER';
-  }
-
-  // 7-Day Forecast (including today or next 6 days)
-  const forecastList = document.getElementById('forecast-list');
-  forecastList.innerHTML = '';
-
-  const daysOfWeek = state.language === 'id' 
-    ? ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] 
-    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  // Start from index 1 (tomorrow) to index 6
-  for (let i = 1; i <= 6; i++) {
-    const dateStr = data.daily.time[i];
-    const date = new Date(dateStr);
-    const dayName = daysOfWeek[date.getDay()];
-    
-    const maxTemp = Math.round(data.daily.temperature_2m_max[i]);
-    const minTemp = Math.round(data.daily.temperature_2m_min[i]);
-    const code = data.daily.weathercode[i];
-    const info = getWeatherInfo(code);
-
-    const item = document.createElement('div');
-    item.className = 'forecast-item';
-    item.innerHTML = `
-      <div class="day-name">${dayName}</div>
-      <div class="day-icon" title="${info.desc}"><i data-lucide="${info.icon}"></i></div>
-      <div class="day-temps">
-        <span class="temp-high">${maxTemp}°</span>
-        <span class="temp-low">${minTemp}°</span>
-      </div>
-    `;
-    forecastList.appendChild(item);
-  }
-
-  // Re-initialize icons for new elements
-  lucide.createIcons();
-}
-
-// --- UI Interaction ---
-function initializeUI() {
-  // Settings Panel Toggle
-  const trigger = document.getElementById('settings-trigger');
-  const panel = document.getElementById('settings-panel');
-  const closeBtn = document.getElementById('close-settings');
-
-  trigger.addEventListener('click', () => panel.classList.remove('hidden'));
-  closeBtn.addEventListener('click', () => panel.classList.add('hidden'));
-
-  // Hydrate Controls
-  document.getElementById('theme-select').value = state.theme;
-  document.getElementById('color-input').value = state.color;
-  document.getElementById('color-hex').textContent = state.color;
-  
-  const cardColorInput = document.getElementById('card-color-input');
-  if(cardColorInput) {
-    cardColorInput.value = state.cardColor;
-    document.getElementById('card-color-hex').textContent = state.cardColor;
-  }
-  
-  const bgColorInput = document.getElementById('bg-color-input');
-  const bgColorPicker = document.getElementById('bg-color-picker');
-  if(bgColorInput) {
-    bgColorInput.value = state.bgColor;
-    if(state.bgColor.startsWith('#')) bgColorPicker.value = state.bgColor;
-  }
-
-  const borderColorInput = document.getElementById('border-color-input');
-  if(borderColorInput) {
-    borderColorInput.value = state.borderColor;
-    document.getElementById('border-color-hex').textContent = state.borderColor;
-  }
-
-  const borderWidthSelect = document.getElementById('border-width-select');
-  if(borderWidthSelect) borderWidthSelect.value = state.borderWidth;
-
-  const sizeSelect = document.getElementById('size-select');
-  if(sizeSelect) sizeSelect.value = state.size;
-
-  const languageSelect = document.getElementById('language-select');
-  if(languageSelect) languageSelect.value = state.language;
-  
-  // Find closest font match
-  const fontSelect = document.getElementById('font-select');
-  Array.from(fontSelect.options).forEach(opt => {
-    if (state.font.includes(opt.value.split(',')[0].replace(/'/g, ''))) {
-      fontSelect.value = opt.value;
+    try {
+        // 1. Geocode location to lat/lon
+        const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(state.location)}&count=1&language=${state.language}&format=json`);
+        const geoData = await geoResponse.json();
+        
+        if (!geoData.results || geoData.results.length === 0) {
+            throw new Error(`Location "${state.location}" not found.`);
+        }
+        
+        const { latitude, longitude, name, admin1, country } = geoData.results[0];
+        const displayLocation = admin1 ? `${name}, ${admin1}` : `${name}, ${country}`;
+        
+        // 2. Fetch Weather
+        const tempUnit = state.unit === 'fahrenheit' ? '&temperature_unit=fahrenheit' : '';
+        const windUnit = state.unit === 'fahrenheit' ? '&windspeed_unit=mph' : '';
+        
+        const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=relativehumidity_2m&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto${tempUnit}${windUnit}`);
+        const weatherData = await weatherResponse.json();
+        
+        weatherDataCache = {
+            locationName: displayLocation,
+            current: weatherData.current_weather,
+            daily: weatherData.daily,
+            humidity: weatherData.hourly.relativehumidity_2m[new Date().getHours()]
+        };
+        
+        updateWeatherUI(weatherDataCache);
+        showContent();
+        
+    } catch (error) {
+        console.error("Weather Fetch Error:", error);
+        showError(error.message);
     }
-  });
-
-  document.getElementById('radius-select').value = state.radius;
-  document.getElementById('location-input').value = state.locationName;
-  document.getElementById('units-select').value = state.units;
-  document.getElementById('layout-select').value = state.layout;
-
-  // Listeners
-  document.getElementById('theme-select').addEventListener('change', (e) => {
-    state.theme = e.target.value;
-    updateURLParameter('theme', state.theme);
-    applyStateToCSS();
-  });
-
-  document.getElementById('color-input').addEventListener('input', (e) => {
-    state.color = e.target.value;
-    document.getElementById('color-hex').textContent = state.color;
-    updateURLParameter('color', state.color);
-    applyStateToCSS();
-  });
-
-  if (cardColorInput) {
-    cardColorInput.addEventListener('input', (e) => {
-      state.cardColor = e.target.value;
-      document.getElementById('card-color-hex').textContent = state.cardColor;
-      updateURLParameter('cardColor', state.cardColor);
-      applyStateToCSS();
-    });
-  }
-
-  if (bgColorPicker && bgColorInput) {
-    bgColorPicker.addEventListener('input', (e) => {
-      state.bgColor = e.target.value;
-      bgColorInput.value = state.bgColor;
-      updateURLParameter('bgColor', state.bgColor);
-      applyStateToCSS();
-    });
-    bgColorInput.addEventListener('input', (e) => {
-      state.bgColor = e.target.value;
-      updateURLParameter('bgColor', state.bgColor);
-      applyStateToCSS();
-    });
-  }
-
-  if (borderColorInput) {
-    borderColorInput.addEventListener('input', (e) => {
-      state.borderColor = e.target.value;
-      document.getElementById('border-color-hex').textContent = state.borderColor;
-      updateURLParameter('borderColor', state.borderColor);
-      applyStateToCSS();
-    });
-  }
-
-  if (borderWidthSelect) {
-    borderWidthSelect.addEventListener('change', (e) => {
-      state.borderWidth = e.target.value;
-      updateURLParameter('borderWidth', state.borderWidth);
-      applyStateToCSS();
-    });
-  }
-
-  if (sizeSelect) {
-    sizeSelect.addEventListener('change', (e) => {
-      state.size = e.target.value;
-      updateURLParameter('size', state.size);
-      applyStateToCSS();
-    });
-  }
-
-  if (languageSelect) {
-    languageSelect.addEventListener('change', (e) => {
-      state.language = e.target.value;
-      updateURLParameter('language', state.language);
-      fetchWeatherData();
-    });
-  }
-
-  document.getElementById('font-select').addEventListener('change', (e) => {
-    state.font = e.target.value;
-    updateURLParameter('font', state.font);
-    applyStateToCSS();
-  });
-
-  document.getElementById('radius-select').addEventListener('change', (e) => {
-    state.radius = e.target.value;
-    updateURLParameter('radius', state.radius);
-    applyStateToCSS();
-  });
-
-  document.getElementById('units-select').addEventListener('change', (e) => {
-    state.units = e.target.value;
-    updateURLParameter('units', state.units);
-    fetchWeatherData(); // refetch with new units
-  });
-
-  document.getElementById('layout-select').addEventListener('change', (e) => {
-    state.layout = e.target.value;
-    updateURLParameter('layout', state.layout);
-    applyStateToCSS();
-  });
-
-  // Location search
-  const searchBtn = document.getElementById('search-btn');
-  const locInput = document.getElementById('location-input');
-  
-  searchBtn.addEventListener('click', () => {
-    if (locInput.value.trim()) geocodeLocation(locInput.value.trim());
-  });
-
-  locInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && locInput.value.trim()) {
-      geocodeLocation(locInput.value.trim());
-    }
-  });
-
-  // Copy URL
-  document.getElementById('copy-btn').addEventListener('click', () => {
-    const urlInput = document.getElementById('embed-url');
-    urlInput.select();
-    document.execCommand('copy');
-    
-    const btn = document.getElementById('copy-btn');
-    const originalText = btn.textContent;
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = originalText, 2000);
-  });
 }
+
+function showLoading() {
+    loadingState.classList.remove('hidden');
+    errorState.classList.add('hidden');
+    weatherContent.classList.add('hidden');
+}
+
+function showError(msg) {
+    loadingState.classList.add('hidden');
+    errorState.classList.remove('hidden');
+    weatherContent.classList.add('hidden');
+    errorMessage.textContent = msg;
+}
+
+function showContent() {
+    loadingState.classList.add('hidden');
+    errorState.classList.add('hidden');
+    weatherContent.classList.remove('hidden');
+}
+
+function updateWeatherUI(data) {
+    // Current
+    document.getElementById('display-location').textContent = data.locationName;
+    
+    // Use Intl for Date
+    const today = new Date();
+    const dateOptions = { weekday: 'long', month: 'short', day: 'numeric' };
+    document.getElementById('display-date').textContent = today.toLocaleDateString(state.language === 'id' ? 'id-ID' : 'en-US', dateOptions);
+    
+    document.getElementById('current-temp').textContent = Math.round(data.current.temperature);
+    document.getElementById('current-unit').textContent = state.unit === 'fahrenheit' ? '°F' : '°C';
+    document.getElementById('current-wind').textContent = `${data.current.windspeed} ${state.unit === 'fahrenheit' ? 'mph' : 'km/h'}`;
+    document.getElementById('current-humidity').textContent = `${data.humidity}%`;
+    
+    const wCode = data.current.weathercode;
+    const wInfo = WEATHER_CODES[wCode] || WEATHER_CODES[0];
+    document.getElementById('current-icon').innerHTML = wInfo.icon;
+    document.getElementById('current-desc').textContent = state.language === 'id' ? wInfo.id : wInfo.en;
+    
+    const lang = i18n[state.language] || i18n['en'];
+    const detailLabels = document.querySelectorAll('.detail-label');
+    if (detailLabels.length >= 2) {
+        detailLabels[0].textContent = lang.wind;
+        detailLabels[1].textContent = lang.humidity;
+    }
+    
+    // Forecast (next 6 days after today)
+    const forecastContainer = document.getElementById('forecast-container');
+    forecastContainer.innerHTML = '';
+    
+    // Open-Meteo returns 7 days starting today. We'll show days 1-6 (tomorrow + 5 days)
+    for (let i = 1; i < 7; i++) {
+        if (!data.daily.time[i]) break;
+        
+        const dateStr = data.daily.time[i];
+        const dateObj = new Date(dateStr);
+        // Ensure proper timezone parsing issue workaround
+        dateObj.setMinutes(dateObj.getMinutes() + dateObj.getTimezoneOffset());
+        
+        const dayOptions = { weekday: 'short' };
+        const dayName = dateObj.toLocaleDateString(state.language === 'id' ? 'id-ID' : 'en-US', dayOptions);
+        
+        const dCode = data.daily.weathercode[i];
+        const dInfo = WEATHER_CODES[dCode] || WEATHER_CODES[0];
+        
+        const maxT = Math.round(data.daily.temperature_2m_max[i]);
+        const minT = Math.round(data.daily.temperature_2m_min[i]);
+        
+        const cardHtml = `
+            <div class="forecast-card card">
+                <span class="fc-day">${dayName}</span>
+                <span class="fc-icon" title="${state.language === 'id' ? dInfo.id : dInfo.en}">${dInfo.icon}</span>
+                <div class="fc-temp-group">
+                    <span class="fc-temp-max">${maxT}°</span>
+                    <span class="fc-temp-min">${minT}°</span>
+                </div>
+            </div>
+        `;
+        forecastContainer.innerHTML += cardHtml;
+    }
+}
+
+// --- Settings UI Hydration and DOM Events ---
+
+function hydrateSettingsUI() {
+    document.getElementById('location-input').value = state.location;
+    document.getElementById('unit-select').value = state.unit;
+    document.getElementById('layout-select').value = state.layout;
+    
+    document.getElementById('theme-select').value = state.theme;
+    
+    // Sync Colors (Picker & Text)
+    syncColorInput('color', state.color);
+    syncColorInput('card-color', state.cardColor);
+    syncColorInput('bg-color', state.bgColor);
+    syncColorInput('border-color', state.borderColor);
+    
+    document.getElementById('border-width-select').value = state.borderWidth;
+    document.getElementById('font-select').value = state.font;
+    document.getElementById('size-select').value = state.size;
+    document.getElementById('radius-select').value = state.radius;
+    document.getElementById('language-select').value = state.language;
+    
+    updateEmbedUrl();
+}
+
+function syncColorInput(idPrefix, val) {
+    const textInput = document.getElementById(`${idPrefix}-input`);
+    const pickerInput = document.getElementById(`${idPrefix}-picker-input`);
+    
+    if (!textInput || !pickerInput) return;
+    
+    textInput.value = val.replace('#', ''); // Internal state stores without hash mostly, but just in case
+    
+    // Only update picker if it's a valid hex, not 'transparent'
+    if (val !== 'transparent') {
+        let hex = formatColor(val);
+        // Pickers need valid 6-char hex
+        if(/^#[0-9A-F]{6}$/i.test(hex)) {
+            pickerInput.value = hex;
+        }
+    } else {
+        pickerInput.value = '#ffffff'; // Fallback
+    }
+}
+
+function attachEventListeners() {
+    // Open / Close Settings
+    settingsTrigger.addEventListener('click', () => {
+        settingsPanel.classList.remove('hidden');
+        settingsBackdrop.classList.remove('hidden');
+        embedWarning.classList.add('hidden'); // hide warning when opening
+    });
+
+    const closeMenu = () => {
+        settingsPanel.classList.add('hidden');
+        settingsBackdrop.classList.add('hidden');
+    };
+    closeSettingsBtn.addEventListener('click', closeMenu);
+    settingsBackdrop.addEventListener('click', closeMenu);
+
+    // Track Location changes (Debounced fetch)
+    let fetchTimeout;
+    document.getElementById('location-input').addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (val.length < 2) return;
+        updateState('location', val);
+        clearTimeout(fetchTimeout);
+        fetchTimeout = setTimeout(() => {
+            fetchWeatherData();
+        }, 800);
+    });
+
+    document.getElementById('unit-select').addEventListener('change', (e) => {
+        updateState('unit', e.target.value);
+        fetchWeatherData();
+    });
+
+    document.getElementById('layout-select').addEventListener('change', (e) => updateState('layout', e.target.value));
+    
+    // Generic Dropdowns
+    document.getElementById('theme-select').addEventListener('change', (e) => updateState('theme', e.target.value));
+    document.getElementById('border-width-select').addEventListener('change', (e) => updateState('borderWidth', e.target.value));
+    document.getElementById('font-select').addEventListener('change', (e) => updateState('font', e.target.value));
+    document.getElementById('size-select').addEventListener('change', (e) => updateState('size', e.target.value));
+    document.getElementById('radius-select').addEventListener('change', (e) => updateState('radius', e.target.value));
+    document.getElementById('language-select').addEventListener('change', (e) => {
+        updateState('language', e.target.value);
+        fetchWeatherData();
+    });
+
+    // Color Pickers & Text Inputs
+    setupColorBinds('color');
+    setupColorBinds('card-color', 'cardColor');
+    setupColorBinds('bg-color', 'bgColor');
+    setupColorBinds('border-color', 'borderColor');
+    
+    // Copy Button
+    copyBtn.addEventListener('click', () => {
+        embedUrlInput.select();
+        document.execCommand('copy');
+        
+        const lang = i18n[state.language] || i18n['en'];
+        const originalText = lang.copyBtn;
+        copyBtn.textContent = lang.copiedBtn;
+        copyBtn.style.backgroundColor = '#10b981';
+        embedWarning.classList.add('hidden');
+        
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.style.backgroundColor = 'var(--ui-accent)';
+        }, 2000);
+    });
+}
+
+function setupColorBinds(idPrefix, stateKey = idPrefix) {
+    const textInput = document.getElementById(`${idPrefix}-input`);
+    const pickerInput = document.getElementById(`${idPrefix}-picker-input`);
+    
+    textInput.addEventListener('input', (e) => {
+        let val = e.target.value;
+        updateState(stateKey, val);
+        // Only trigger picker sync if valid hex format to avoid interrupting typing
+        if (/^[0-9A-Fa-f]{6}$/.test(val)) {
+            pickerInput.value = `#${val}`;
+        }
+    });
+
+    pickerInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace('#', '');
+        textInput.value = val;
+        updateState(stateKey, val);
+    });
+}
+
+function updateState(key, value) {
+    if (state[key] === value) return;
+    
+    state[key] = value;
+    applyStateToUI();
+    
+    // Update URL Params silently
+    const url = new URL(window.location);
+    if (value && value !== DEFAULT_STATE[key] && value !== 'transparent') {
+        url.searchParams.set(key, encodeURIComponent(value));
+    } else if (value === 'transparent' && key === 'bgColor') {
+       url.searchParams.set(key, 'transparent'); 
+    } else {
+        url.searchParams.delete(key);
+    }
+    
+    window.history.replaceState({}, '', url);
+    updateEmbedUrl();
+    embedWarning.classList.remove('hidden');
+}
+
+function updateEmbedUrl() {
+    embedUrlInput.value = window.location.href;
+}
+
+// Start
+document.addEventListener('DOMContentLoaded', init);
