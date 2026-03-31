@@ -31,9 +31,8 @@
                     <div class="card card-flipper-back">
                         <div class="digit">00</div>
                     </div>
+                    <div class="overlay-text am-pm-overlay" id="am-pm-indicator">PM</div>
                 </div>
-
-                <div class="separator">:</div>
 
                 <!-- Minutes -->
                 <div class="flip-unit" id="unit-minutes">
@@ -50,9 +49,8 @@
                     <div class="card card-flipper-back">
                         <div class="digit">00</div>
                     </div>
+                    <div class="overlay-text day-overlay" id="day-indicator">SUNDAY</div>
                 </div>
-
-                <div class="separator seconds-separator" style="display: none;">:</div>
 
                 <!-- Seconds -->
                 <div class="flip-unit seconds-unit" id="unit-seconds" style="display: none;">
@@ -70,9 +68,6 @@
                         <div class="digit">00</div>
                     </div>
                 </div>
-                
-                <!-- AM/PM indicator -->
-                <div class="am-pm" id="am-pm-indicator">AM</div>
             </div>
         </div>
     </div>
@@ -103,10 +98,18 @@
             </div>
             
             <div class="setting-group">
-                <label for="color-input">Accent Color</label>
+                <label for="color-input">Text/Accent Color</label>
                 <div class="input-row">
                     <input type="color" id="color-picker-input">
                     <input type="text" id="color-input" placeholder="e.g. 3b82f6" maxlength="6">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="card-color-input">Card Color</label>
+                <div class="input-row">
+                    <input type="color" id="card-color-picker-input">
+                    <input type="text" id="card-color-input" placeholder="e.g. 1f2937" maxlength="6">
                 </div>
             </div>
 
@@ -115,6 +118,26 @@
                 <div class="input-row">
                     <input type="color" id="bg-color-picker-input">
                     <input type="text" id="bg-color-input" placeholder="e.g. ffffff or transparent">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="border-color-input">Border Color</label>
+                <div class="input-row">
+                    <input type="color" id="border-color-picker-input">
+                    <input type="text" id="border-color-input" placeholder="e.g. 000000" maxlength="6">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="border-width-select">Border Width</label>
+                <div class="select-wrapper">
+                    <select id="border-width-select">
+                        <option value="0px">None</option>
+                        <option value="1px">Small (1px)</option>
+                        <option value="2px">Medium (2px)</option>
+                        <option value="4px">Large (4px)</option>
+                    </select>
                 </div>
             </div>
 
@@ -182,6 +205,13 @@
                 <button id="copy-btn">Copy</button>
             </div>
             <p class="help-text">Copy link & paste into Notion as an Embed.</p>
+            
+            <div class="sidebar-credits">
+                <p>Created by <strong>zaidhamzah</strong></p>
+                <a href="#" target="_blank" class="donate-btn">
+                    ☕ Buy me a coffee / Donate
+                </a>
+            </div>
         </div>
     </aside>
 

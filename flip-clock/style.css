@@ -1,44 +1,45 @@
 /* Universal Variables defined by AGENT.MD */
 :root {
   /* Default Light Theme */
-  --bg-color: #f8fafc;
+  --bg-color: #f4f5f0;
   --text-primary: #0f172a;
   --text-secondary: #64748b;
-  --accent-color: #3b82f6;
+  --accent-color: #ffffff;
   --border-radius: 12px;
-  --font-family: 'Inter', system-ui, sans-serif;
+  --font-family: 'Oswald', sans-serif;
   
   /* Widget Specific Vars */
-  --card-bg: #ffffff;
-  --card-text: #0f172a;
-  --card-border: #e2e8f0;
-  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-  --line-color: rgba(0,0,0,0.05);
+  --card-bg: #838e5d; /* Olive green from image */
+  --card-text: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.05);
+  --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+  --line-color: rgba(255, 255, 255, 0.15);
 
-  --settings-bg: rgba(255, 255, 255, 0.85);
-  --settings-border: rgba(255, 255, 255, 0.6);
-  --input-bg: rgba(241, 245, 249, 0.8);
+  --settings-bg: #ffffff;
+  --settings-border: #e2e8f0;
+  --input-bg: #f1f5f9;
   --input-border: #cbd5e1;
+  --ui-accent: #3b82f6;
 
   --scale: 1; /* For Size Settings */
 }
 
 /* Dark Theme overrides */
 body.dark {
-  --bg-color: #0f172a;
+  --bg-color: #12140f;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --accent-color: #60a5fa;
+  --accent-color: #ffffff;
   
-  --card-bg: #1e293b;
-  --card-text: #f8fafc;
+  --card-bg: #4c5336; /* Dark olive */
+  --card-text: #ffffff;
   --card-border: #334155;
-  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-  --line-color: rgba(255,255,255,0.05);
+  --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  --line-color: rgba(255,255,255,0.1);
 
-  --settings-bg: rgba(15, 23, 42, 0.85);
-  --settings-border: rgba(255, 255, 255, 0.1);
-  --input-bg: rgba(30, 41, 59, 0.8);
+  --settings-bg: #0f172a;
+  --settings-border: #1e293b;
+  --input-bg: #1e293b;
   --input-border: #334155;
 }
 
@@ -90,45 +91,41 @@ body {
 .clock-container {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 4px; /* Tiny gap */
     padding: 20px;
 }
 
-.separator {
-    font-size: 80px;
+.overlay-text {
+    position: absolute;
+    bottom: 15px;
+    font-size: 16px;
+    font-family: 'Oswald', sans-serif; /* Forcing for the labels */
     font-weight: 600;
-    color: var(--text-secondary);
-    line-height: 1;
-    margin-bottom: 12px;
-    animation: pulse 2s infinite ease-in-out;
+    color: var(--card-text);
+    z-index: 10;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+.am-pm-overlay {
+    left: 15px;
 }
 
-.am-pm {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--accent-color);
-    margin-top: auto;
-    margin-bottom: 20px;
-    margin-left: 8px;
-    letter-spacing: 1px;
+.day-overlay {
+    right: 15px;
 }
 
 /* Flip Unit (Holding the cards) */
 .flip-unit {
     position: relative;
-    width: 110px;
-    height: 140px;
-    perspective: 800px;
+    width: 220px; /* Much wider */
+    height: 300px; /* Taller */
+    perspective: 1200px;
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
-    border: 1px solid var(--card-border);
-    transition: background-color 0.4s ease, border-color 0.4s ease, border-radius 0.3s ease;
+    border: var(--border-width, 0px) solid var(--card-border);
+    transition: background-color 0.4s ease, border-color 0.4s ease, border-radius 0.3s ease, border-width 0.3s ease;
 }
 
 /* The Cards */
@@ -140,9 +137,8 @@ body {
     background-color: var(--card-bg);
     color: var(--card-text);
     overflow: hidden;
-    font-size: 96px;
+    font-size: 200px; /* Massive text */
     font-weight: 600;
-    line-height: 140px;
     text-align: center;
     transition: background-color 0.4s ease, color 0.4s ease;
     transform-style: preserve-3d;
@@ -153,6 +149,25 @@ body {
     position: absolute;
     left: 0;
     width: 100%;
+    /* Let the text bounding box define the height */
+    line-height: 1; 
+    text-align: center;
+    /* Optical correction margin. Oswald still has a thick descender that makes optical centering slightly off. */
+    margin-top: -15px;
+}
+
+.card-top .digit,
+.card-flipper .digit {
+    /* Align bottom of text natively aligned with the fold, then pull half up */
+    top: 100%;
+    transform: translateY(-50%);
+}
+
+.card-bottom .digit,
+.card-flipper-back .digit {
+    /* Align top of text natively aligned with the fold, then pull half up */
+    top: 0;
+    transform: translateY(-50%);
 }
 
 /* Top half */
@@ -163,19 +178,12 @@ body {
     transform-origin: bottom center;
     border-bottom: 1px solid var(--line-color);
 }
-.card-top .digit {
-    top: 0;
-}
 
 /* Bottom half */
 .card-bottom {
     bottom: 0;
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
-    align-items: flex-end;
-}
-.card-bottom .digit {
-    bottom: 0;
 }
 
 /* Flipper overlays (used for animation) */
@@ -188,9 +196,6 @@ body {
     z-index: 2;
     /* Initially hidden via rotation or display */
 }
-.card-flipper .digit {
-    top: 0;
-}
 
 .card-flipper-back {
     bottom: 0;
@@ -199,9 +204,6 @@ body {
     transform-origin: top center;
     z-index: 1;
     transform: rotateX(180deg);
-}
-.card-flipper-back .digit {
-    bottom: 0;
 }
 
 /* Center divide line overlay */
@@ -219,10 +221,10 @@ body {
 /* ANIMATION CLASSES */
 
 .flip-down .card-flipper {
-    animation: flipTop 0.6s cubic-bezier(0.37, 0.01, 0.94, 0.95) forwards;
+    animation: flipTop 0.3s ease-in forwards;
 }
 .flip-down .card-flipper-back {
-    animation: flipBottom 0.6s cubic-bezier(0.15, 0.45, 0.28, 1) forwards;
+    animation: flipBottom 0.3s ease-out 0.3s forwards;
 }
 
 @keyframes flipTop {
@@ -255,20 +257,28 @@ body {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background-color: var(--card-bg);
+    background-color: var(--settings-bg);
     color: var(--text-secondary);
-    border: 1px solid var(--card-border);
+    border: 1px solid var(--settings-border);
     cursor: pointer;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+}
+
+body:hover .settings-btn,
+.settings-btn:focus {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .settings-btn:hover {
-    color: var(--accent-color);
+    color: var(--ui-accent);
     transform: rotate(30deg);
 }
 
@@ -276,7 +286,6 @@ body {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background-color: rgba(0,0,0,0.1);
-    backdrop-filter: blur(2px);
     z-index: 150;
     opacity: 1;
     transition: opacity 0.3s ease;
@@ -290,13 +299,12 @@ body {
     max-width: 380px;
     height: 100vh;
     background-color: var(--settings-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     border-left: 1px solid var(--settings-border);
     box-shadow: -10px 0 30px rgba(0,0,0,0.1);
     z-index: 200;
     display: flex;
     flex-direction: column;
+    font-family: 'Inter', system-ui, sans-serif;
     transform: translateX(0);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -315,7 +323,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid var(--card-border);
+    border-bottom: 1px solid var(--settings-border);
 }
 
 .settings-header h2 {
@@ -391,7 +399,7 @@ select {
 
 input[type="text"]:focus,
 select:focus {
-    border-color: var(--accent-color);
+    border-color: var(--ui-accent);
 }
 
 .select-wrapper {
@@ -457,7 +465,7 @@ input[type="color"]::-moz-color-swatch {
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: var(--card-border);
+    background-color: var(--settings-border);
     transition: .4s;
     border-radius: 24px;
 }
@@ -474,7 +482,7 @@ input[type="color"]::-moz-color-swatch {
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 input:checked + .slider {
-    background-color: var(--accent-color);
+    background-color: var(--ui-accent);
 }
 input:checked + .slider:before {
     transform: translateX(20px);
@@ -482,8 +490,8 @@ input:checked + .slider:before {
 
 .settings-footer {
     padding: 24px;
-    border-top: 1px solid var(--card-border);
-    background-color: var(--card-bg);
+    border-top: 1px solid var(--settings-border);
+    background-color: var(--settings-bg);
 }
 
 .settings-footer label {
@@ -508,7 +516,7 @@ input:checked + .slider:before {
 
 #copy-btn {
     padding: 10px 16px;
-    background-color: var(--accent-color);
+    background-color: var(--ui-accent);
     color: white;
     border: none;
     border-radius: 8px;
@@ -550,4 +558,52 @@ body.dark .embed-warning {
 
 .embed-warning.hidden {
     display: none;
+}
+
+/* --- CREDITS & DONATE --- */
+
+.sidebar-credits {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--settings-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-credits p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.sidebar-credits strong {
+    color: var(--ui-text-primary, var(--text-primary));
+}
+
+.donate-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background-color: #FFDD00;
+    color: #111;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(255, 221, 0, 0.3);
+}
+
+.donate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px -2px rgba(255, 221, 0, 0.4);
+    background-color: #ffe633;
+}
+
+body.dark .donate-btn {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
 }

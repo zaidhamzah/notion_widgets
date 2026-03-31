@@ -1,9 +1,12 @@
 // Default State defined by AGENT.MD standards + Widget Specs
 const DEFAULT_STATE = {
     theme: 'light',
-    color: '#3b82f6', // Hex with #
+    color: '#ffffff', // Text
+    cardColor: '#838e5d', // Hex Card
     bgColor: '', // Empty means use default theme background
-    font: 'inter',
+    borderColor: '#000000', // Border color
+    borderWidth: '0px',
+    font: 'oswald',
     size: 'md',
     radius: 'md',
     format: '12h',
@@ -24,8 +27,13 @@ const els = {
     theme: document.getElementById('theme-select'),
     colorInput: document.getElementById('color-input'),
     colorPicker: document.getElementById('color-picker-input'),
+    cardColorInput: document.getElementById('card-color-input'),
+    cardColorPicker: document.getElementById('card-color-picker-input'),
     bgColorInput: document.getElementById('bg-color-input'),
     bgColorPicker: document.getElementById('bg-color-picker-input'),
+    borderColorInput: document.getElementById('border-color-input'),
+    borderColorPicker: document.getElementById('border-color-picker-input'),
+    borderWidthSelect: document.getElementById('border-width-select'),
     font: document.getElementById('font-select'),
     size: document.getElementById('size-select'),
     radius: document.getElementById('radius-select'),
@@ -43,6 +51,7 @@ const els = {
     minutes: document.getElementById('unit-minutes'),
     seconds: document.getElementById('unit-seconds'),
     amPm: document.getElementById('am-pm-indicator'),
+    dayIndicator: document.getElementById('day-indicator'),
     secondsSeparators: document.querySelectorAll('.seconds-separator')
 };
 
@@ -63,8 +72,12 @@ function initSettings() {
     objectKeys(DEFAULT_STATE).forEach(key => {
         let val = params.get(key);
         if (val !== null) {
-            if (key === 'color' && val) val = '#' + val.replace('#', '');
-            if (key === 'bgColor' && val && val !== 'transparent') val = '#' + val.replace('#', '');
+            if (['color', 'cardColor', 'borderColor'].includes(key) && val) {
+                val = '#' + val.replace('#', '');
+            }
+            if (key === 'bgColor' && val && val !== 'transparent') {
+                val = '#' + val.replace('#', '');
+            }
             if (key === 'showSeconds') val = val === 'true';
             currentState[key] = val;
         }
@@ -91,11 +104,21 @@ function hydrateUI() {
     els.colorInput.value = c;
     els.colorPicker.value = '#' + c;
 
+    const cc = currentState.cardColor.replace('#', '');
+    els.cardColorInput.value = cc;
+    els.cardColorPicker.value = '#' + cc;
+
     const bg = currentState.bgColor.replace('#', '');
     els.bgColorInput.value = bg || '';
     if (bg && bg !== 'transparent') {
         els.bgColorPicker.value = '#' + bg;
     }
+
+    const bc = currentState.borderColor.replace('#', '');
+    els.borderColorInput.value = bc;
+    els.borderColorPicker.value = '#' + bc;
+
+    els.borderWidthSelect.value = currentState.borderWidth;
 
     els.font.value = currentState.font;
     els.size.value = currentState.size;
@@ -116,13 +139,17 @@ function applyState() {
     
     // Colors
     root.style.setProperty('--accent-color', currentState.color);
+    root.style.setProperty('--card-text', currentState.color); // Sync card text color with accent setting
+    root.style.setProperty('--card-bg', currentState.cardColor);
+    root.style.setProperty('--card-border', currentState.borderColor);
+    root.style.setProperty('--border-width', currentState.borderWidth);
     
     if (currentState.bgColor === 'transparent') {
-        root.style.setProperty('--widget-bg', 'transparent');
+        root.style.setProperty('--bg-color', 'transparent');
     } else if (currentState.bgColor) {
-        root.style.setProperty('--widget-bg', currentState.bgColor);
+        root.style.setProperty('--bg-color', currentState.bgColor);
     } else {
-        root.style.removeProperty('--widget-bg'); // fallback to theme auto bg
+        root.style.removeProperty('--bg-color'); // fallback to theme auto bg
     }
     
     // Classes for predefined styling
@@ -194,6 +221,32 @@ els.colorPicker.addEventListener('input', (e) => {
     els.colorInput.value = e.target.value.replace('#', '');
     updateState('color', e.target.value);
 });
+
+els.cardColorInput.addEventListener('input', (e) => {
+    let val = e.target.value;
+    if (val.length === 6) {
+        els.cardColorPicker.value = '#' + val;
+        updateState('cardColor', '#' + val);
+    }
+});
+els.cardColorPicker.addEventListener('input', (e) => {
+    els.cardColorInput.value = e.target.value.replace('#', '');
+    updateState('cardColor', e.target.value);
+});
+
+els.borderColorInput.addEventListener('input', (e) => {
+    let val = e.target.value;
+    if (val.length === 6) {
+        els.borderColorPicker.value = '#' + val;
+        updateState('borderColor', '#' + val);
+    }
+});
+els.borderColorPicker.addEventListener('input', (e) => {
+    els.borderColorInput.value = e.target.value.replace('#', '');
+    updateState('borderColor', e.target.value);
+});
+
+els.borderWidthSelect.addEventListener('change', (e) => updateState('borderWidth', e.target.value));
 
 els.bgColorInput.addEventListener('input', (e) => {
     let val = e.target.value;
@@ -268,7 +321,10 @@ function flipUnit(element, newVal) {
     // Clean up
     setTimeout(() => {
         element.classList.remove('flip-down');
+        top.textContent = newVal;
         bottom.textContent = newVal;
+        flipperFront.textContent = newVal;
+        flipperBack.textContent = newVal;
     }, 600); // Wait for 0.6s animation duration
 }
 
@@ -286,6 +342,12 @@ function updateClock() {
         els.amPm.textContent = isAm ? 'AM' : 'PM';
     } else {
         els.amPm.textContent = '';
+    }
+
+    // Handling Day
+    if (els.dayIndicator) {
+        const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+        els.dayIndicator.textContent = days[now.getDay()];
     }
 
     const hStr = formatTimeStr(h);
