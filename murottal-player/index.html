@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Murottal Mini Player Widget</title>
+    <!-- Use Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="widget-root">
+        <div class="player-wrapper">
+            <div class="player-card">
+                <div class="player-top">
+                    <!-- Album Art / Islamic Pattern Placeholder -->
+                    <div class="album-art">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="album-icon">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+                            <path d="M12 8v4l3 3"></path>
+                        </svg>
+                    </div>
+                    
+                    <div class="track-info">
+                        <h1 id="track-title" class="track-title">Loading...</h1>
+                        <h2 id="track-artist" class="track-artist">Mishary Rashid Alafasy</h2>
+                    </div>
+                </div>
+
+                <div class="player-progress">
+                    <input type="range" id="progress-bar" class="progress-bar" min="0" max="100" value="0">
+                    <div class="time-container">
+                        <span id="current-time">00:00</span>
+                        <span id="total-time">00:00</span>
+                    </div>
+                </div>
+
+                <div class="player-controls">
+                    <button id="btn-prev" class="control-btn" aria-label="Previous Surah">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    </button>
+                    
+                    <button id="btn-play-pause" class="control-btn play-btn" aria-label="Play">
+                        <svg id="icon-play" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        <svg id="icon-pause" class="hidden" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+                    
+                    <button id="btn-next" class="control-btn" aria-label="Next Surah">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player" preload="metadata"></audio>
+
+    <!-- Settings UI overlay -->
+    <button id="settings-trigger" class="settings-btn" aria-label="Open Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
+
+    <div id="settings-backdrop" class="settings-backdrop hidden"></div>
+    <aside id="settings-panel" class="settings-panel hidden">
+        <div class="settings-header">
+            <h2>Customize</h2>
+            <button id="close-settings" class="close-btn" aria-label="Close Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        
+        <div class="settings-content">
+            <div class="setting-group">
+                <label for="reciter-select">Reciter</label>
+                <div class="select-wrapper">
+                    <select id="reciter-select">
+                        <option value="afs">Mishary Rashid Alafasy</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="surah-select">Default Surah</label>
+                <div class="select-wrapper">
+                    <select id="surah-select">
+                        <option value="1">1. Al-Fatihah</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group checkbox-group">
+                <label class="toggle">
+                    <input type="checkbox" id="autoplay-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="label-text">Auto-play on Load</span>
+            </div>
+
+            <hr class="separator" />
+            
+            <div class="setting-group">
+                <label for="theme-select">Theme</label>
+                <div class="select-wrapper">
+                    <select id="theme-select">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <label for="color-input">Accent Color</label>
+                <div class="input-row">
+                    <input type="color" id="color-picker-input">
+                    <input type="text" id="color-input" placeholder="e.g. 3b82f6" maxlength="6">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="text-color-input">Text Color (Primary)</label>
+                <div class="input-row">
+                    <input type="color" id="text-color-picker-input">
+                    <input type="text" id="text-color-input" placeholder="Leave empty for theme default" maxlength="6">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="secondary-color-input">Text Color (Secondary)</label>
+                <div class="input-row">
+                    <input type="color" id="secondary-color-picker-input">
+                    <input type="text" id="secondary-color-input" placeholder="Leave empty for theme default" maxlength="6">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="card-color-input">Card Color</label>
+                <div class="input-row">
+                    <input type="color" id="card-color-picker-input">
+                    <input type="text" id="card-color-input" placeholder="e.g. 1f2937" maxlength="6">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="bg-color-input">Background</label>
+                <div class="input-row">
+                    <input type="color" id="bg-color-picker-input">
+                    <input type="text" id="bg-color-input" placeholder="e.g. ffffff or transparent">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="bg-image-input">Background Image URL</label>
+                <input type="text" id="bg-image-input" placeholder="https://example.com/image.jpg">
+            </div>
+
+            <div class="setting-group">
+                <label for="card-opacity-slider">Card Opacity</label>
+                <div class="input-row">
+                    <input type="range" id="card-opacity-slider" min="0" max="1" step="0.05" value="1" style="flex:1">
+                    <span id="card-opacity-val" style="width: 30px; font-size: 0.8rem;">1</span>
+                </div>
+            </div>
+
+            <div class="setting-group checkbox-group">
+                <label class="toggle">
+                    <input type="checkbox" id="glass-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="label-text">Glassmorphism</span>
+            </div>
+
+            <div class="setting-group">
+                <label for="border-color-input">Border Color</label>
+                <div class="input-row">
+                    <input type="color" id="border-color-picker-input">
+                    <input type="text" id="border-color-input" placeholder="e.g. 000000" maxlength="6">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="border-width-select">Border Width</label>
+                <div class="select-wrapper">
+                    <select id="border-width-select">
+                        <option value="0px">None</option>
+                        <option value="1px">Small (1px)</option>
+                        <option value="2px">Medium (2px)</option>
+                        <option value="4px">Large (4px)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="radius-select">Card Radius</label>
+                <div class="select-wrapper">
+                    <select id="radius-select">
+                        <option value="none">None</option>
+                        <option value="sm">Small</option>
+                        <option value="md">Medium</option>
+                        <option value="lg">Large</option>
+                        <option value="full">Maximum</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="settings-footer">
+            <div id="embed-warning" class="embed-warning hidden">
+                ⚠️ Settings changed! You must click Copy below and "Replace" the embed link in Notion to save.
+            </div>
+            <label for="embed-url">Notion Embed URL</label>
+            <div class="url-copy-group">
+                <input type="text" id="embed-url" readonly />
+                <button id="copy-btn">Copy</button>
+            </div>
+            <p class="help-text">Copy link & paste into Notion as an Embed.</p>
+            
+            <div class="sidebar-credits">
+                <p>Created by <strong>zaidhamzah</strong></p>
+                <a href="#" target="_blank" class="donate-btn">
+                    ☕ Buy me a coffee / Donate
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <script src="script.js"></script>
+</body>
+</html>

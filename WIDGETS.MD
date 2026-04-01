@@ -14,14 +14,14 @@
 
 ## Countdowns & Timers
 - [ ] Event Countdown
-- [ ] Pomodoro Timer
+- [x] Pomodoro Timer
 - [ ] New Year Countdown
 - [ ] Life Progress Bar
 - [ ] Year Progress Bar
 
 ## Music
 - [ ] Now Playing (Spotify)
-- [ ] Mini Music Player
+- [x] Mini Murottal Player
 - [ ] Album Art Display
 
 ## Quotes & Inspiration
