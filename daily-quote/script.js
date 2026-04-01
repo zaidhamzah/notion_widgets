@@ -24,6 +24,7 @@ const defaultState = {
     // Widget Specific Config
     source: 'quran', // quran | hadith | both
     showArabic: 'true',
+    language: 'en',
 };
 
 // Current State
@@ -69,6 +70,7 @@ function parseUrlParams() {
     // Widget Specific
     if (params.has('source')) { state.source = params.get('source'); stateChanged = true; }
     if (params.has('showArabic')) { state.showArabic = params.get('showArabic'); stateChanged = true; }
+    if (params.has('language')) { state.language = params.get('language'); stateChanged = true; }
     
     return stateChanged;
 }
@@ -204,6 +206,9 @@ function hydrateSettingsUI() {
     // Widget Specific
     document.getElementById('source-select').value = state.source;
     document.getElementById('show-arabic-toggle').checked = state.showArabic === 'true';
+    if (document.getElementById('language-select')) {
+        document.getElementById('language-select').value = state.language || 'en';
+    }
 }
 
 // 5. Build Embed URL based on current state
@@ -226,6 +231,7 @@ function updateEmbedUrl() {
     
     if (state.source !== defaultState.source) params.set('source', state.source);
     if (state.showArabic !== defaultState.showArabic) params.set('showArabic', state.showArabic);
+    if (state.language !== defaultState.language) params.set('language', state.language);
     
     const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
     window.history.replaceState({}, '', newUrl);
@@ -372,6 +378,13 @@ function attachEventListeners() {
         applyState(); updateEmbedUrl();
         fetchQuote(); // re-fetch when source changes
     });
+    
+    document.getElementById('language-select').addEventListener('change', (e) => {
+        state.language = e.target.value;
+        applyState(); updateEmbedUrl();
+        fetchQuote(); // re-fetch when language changes
+    });
+
     document.getElementById('show-arabic-toggle').addEventListener('change', (e) => {
         state.showArabic = e.target.checked ? 'true' : 'false';
         applyState(); updateEmbedUrl();
@@ -424,9 +437,10 @@ const MAX_HADITH_BUKHARI = 7560; // Max Bukhari hadiths in the API
 async function fetchQuote(retryCount = 0) {
     if (retryCount > 3) {
         // Fallback if API continually fails
+        const fallbackText = state.language === 'id' ? "Sesungguhnya sesudah kesulitan itu ada kemudahan." : "Indeed, with hardship [will be] ease.";
         setQuoteData(
             "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
-            "Indeed, with hardship [will be] ease.",
+            fallbackText,
             "Quran", "94:6"
         );
         return;
@@ -443,11 +457,12 @@ async function fetchQuote(retryCount = 0) {
     try {
         if (currentSource === 'quran') {
             const randomAyahId = Math.floor(Math.random() * MAX_QURAN_AYAH) + 1;
+            const quranLang = state.language === 'id' ? 'id.indonesian' : 'en.asad';
             
-            // Promise.all to fetch both Arabic (uthmani text) and English (Asad translation)
+            // Promise.all to fetch both Arabic (uthmani text) and selected translation
             const [arRes, enRes] = await Promise.all([
                 fetch(`https://api.alquran.cloud/v1/ayah/${randomAyahId}/quran-uthmani`),
-                fetch(`https://api.alquran.cloud/v1/ayah/${randomAyahId}/en.asad`)
+                fetch(`https://api.alquran.cloud/v1/ayah/${randomAyahId}/${quranLang}`)
             ]);
 
             if (!arRes.ok || !enRes.ok) throw new Error("Quran Fetch Failed");
@@ -465,10 +480,11 @@ async function fetchQuote(retryCount = 0) {
         } else {
             // Hadith (Bukhari)
             const randomHadithId = Math.floor(Math.random() * MAX_HADITH_BUKHARI) + 1;
+            const hadithLang = state.language === 'id' ? 'ind-bukhari' : 'eng-bukhari';
             
             const [arRes, enRes] = await Promise.all([
                 fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-bukhari/${randomHadithId}.min.json`),
-                fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-bukhari/${randomHadithId}.min.json`)
+                fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${hadithLang}/${randomHadithId}.min.json`)
             ]);
             
             if (!arRes.ok || !enRes.ok) {
