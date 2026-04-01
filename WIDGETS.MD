@@ -25,7 +25,7 @@
 - [ ] Album Art Display
 
 ## Quotes & Inspiration
-- [ ] Daily Quote
+- [x] Daily Quote
 - [ ] Random Quote Generator
 - [ ] Custom Quote Card
 - [ ] Motivational Quote Rotator
