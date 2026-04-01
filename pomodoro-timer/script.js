@@ -1,10 +1,10 @@
 // Default State defined by AGENT.MD standards + Widget Specs
 const DEFAULT_STATE = {
     bgImage: 'https://images.unsplash.com/photo-1506744626753-3398dd67cf26?auto=format&fit=crop&q=80&w=2940&ixlib=rb-4.0.3', // Fallback landscape
-    bgColor: '#51a1c9', 
+    bgColor: '#51a1c9',
     font: 'inter',
     language: 'en',
-    
+
     // Pomodoro specific
     workTime: 25,
     shortBreak: 5,
@@ -37,7 +37,7 @@ const els = {
     bgColorPicker: document.getElementById('bg-color-picker-input'),
     font: document.getElementById('font-select'),
     language: document.getElementById('language-select'),
-    
+
     // Pomodoro Inputs
     workTime: document.getElementById('work-time-input'),
     shortBreak: document.getElementById('short-break-input'),
@@ -52,12 +52,12 @@ const els = {
 
     // Clock UI
     timerDisplay: document.getElementById('timer-display'),
-    
+
     // App Controls
     startBtn: document.getElementById('start-btn'),
     resetBtn: document.getElementById('reset-btn'),
     modeBtns: document.querySelectorAll('.mode-btn'),
-    
+
     alarmSound: document.getElementById('alarm-sound')
 };
 
@@ -169,22 +169,22 @@ function updateLanguageUI() {
 
     const creditP = document.querySelector('.sidebar-credits p');
     if (creditP) creditP.innerHTML = `${lang.credits} <strong>zaidhamzah</strong>`;
-    
+
     // Quick update for buttons
-    let startText = 'start';
-    let pauseText = 'pause';
-    let workText = 'pomodoro';
-    let shortText = 'short break';
-    let longText = 'long break';
-    
+    let startText = 'Start';
+    let pauseText = 'Pause';
+    let workText = 'Pomodoro';
+    let shortText = 'Short break';
+    let longText = 'Long break';
+
     if (currentState.language === 'id') {
-        startText = 'mulai';
-        pauseText = 'jeda';
-        workText = 'pomodoro';
-        shortText = 'istirahat p.';
-        longText = 'istirahat pjg';
+        startText = 'Mulai';
+        pauseText = 'Jeda';
+        workText = 'Pomodoro';
+        shortText = 'Istirahat p.';
+        longText = 'Istirahat pjg';
     }
-    
+
     els.startBtn.textContent = isRunning ? pauseText : startText;
     els.modeBtns[0].textContent = workText;
     els.modeBtns[1].textContent = shortText;
@@ -216,7 +216,7 @@ function initSettings() {
     hydrateUI();
     applyState();
     generateEmbedUrl();
-    
+
     // Initialize Timer
     setMode('work');
 }
@@ -268,7 +268,7 @@ function updateState(key, value) {
     } else {
         url.searchParams.set(key, typeof value === 'boolean' ? value : value.toString().replace('#', ''));
     }
-    
+
     if (key === 'bgColor' && (!value || value === 'transparent')) {
         url.searchParams.set(key, value);
     }
@@ -310,7 +310,7 @@ function updateClockDisplay() {
 function setMode(mode) {
     currentMode = mode;
     pauseTimer();
-    
+
     els.modeBtns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.mode === mode);
     });
@@ -326,14 +326,14 @@ function setMode(mode) {
 function startTimer() {
     if (isRunning) return;
     if (timeLeft <= 0) return;
-    
+
     isRunning = true;
     els.startBtn.textContent = currentState.language === 'id' ? 'jeda' : 'pause';
-    
+
     timerInterval = setInterval(() => {
         timeLeft--;
         updateClockDisplay();
-        
+
         if (timeLeft <= 0) handleTimerComplete();
     }, 1000);
 }
@@ -341,7 +341,7 @@ function startTimer() {
 function pauseTimer() {
     isRunning = false;
     clearInterval(timerInterval);
-    els.startBtn.textContent = currentState.language === 'id' ? 'mulai' : 'start';
+    els.startBtn.textContent = currentState.language === 'id' ? 'Mulai' : 'Start';
 }
 
 function toggleTimer() {
@@ -352,7 +352,7 @@ function toggleTimer() {
 function handleTimerComplete() {
     pauseTimer();
     if (els.alarmSound) els.alarmSound.play().catch(e => console.log('Audio play failed', e));
-    
+
     if (currentMode === 'work') {
         pomodoroCount++;
         const nextMode = (pomodoroCount % 4 === 0) ? 'long' : 'short';
@@ -426,7 +426,7 @@ if (els.language) els.language.addEventListener('change', (e) => {
 els.copyBtn.addEventListener('click', () => {
     els.embedUrl.select();
     document.execCommand('copy');
-    
+
     const originalText = els.copyBtn.textContent;
     els.copyBtn.textContent = currentState.language === 'id' ? 'Tersalin!' : 'Copied!';
     setTimeout(() => { els.copyBtn.textContent = originalText; }, 2000);
