@@ -538,11 +538,11 @@ function autoFitText() {
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', autoFitText);
-    // Hide panel if inside frame unless forced
-    const isEmbedded = window.self !== window.top;
-    if (isEmbedded) {
-        document.getElementById('settings-trigger').style.display = 'none';
-    }
+    
+    // Bind refresh button to fetch a new quote
+    document.getElementById('refresh-trigger').addEventListener('click', () => {
+        fetchQuote();
+    });
 
     const stateChanged = parseUrlParams();
     applyState();
