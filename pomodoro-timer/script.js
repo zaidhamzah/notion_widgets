@@ -328,7 +328,7 @@ function startTimer() {
     if (timeLeft <= 0) return;
 
     isRunning = true;
-    els.startBtn.textContent = currentState.language === 'id' ? 'jeda' : 'pause';
+    els.startBtn.textContent = currentState.language === 'id' ? 'Jeda' : 'Pause';
 
     timerInterval = setInterval(() => {
         timeLeft--;
