@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <!-- Use Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-background"></div>
+    
+    <div id="widget-root">
+        <div class="pomodoro-wrapper">
+            <!-- Mode Controls -->
+            <div class="mode-controls" id="mode-controls">
+                <button class="mode-btn active" data-mode="work">pomodoro</button>
+                <button class="mode-btn" data-mode="short">short break</button>
+                <button class="mode-btn" data-mode="long">long break</button>
+            </div>
+
+            <!-- Timer Display -->
+            <div class="timer-display" id="timer-display">
+                25:00
+            </div>
+
+            <!-- Bottom Controls -->
+            <div class="bottom-controls">
+                <button class="action-btn" id="start-btn">start</button>
+                <button class="icon-btn" id="reset-btn" aria-label="Reset Timer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                </button>
+                <button class="icon-btn" id="settings-trigger" aria-label="Open Settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-backdrop" class="settings-backdrop hidden"></div>
+    <aside id="settings-panel" class="settings-panel hidden">
+        <div class="settings-header">
+            <h2>Customize</h2>
+            <button id="close-settings" class="close-btn" aria-label="Close Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        
+        <div class="settings-content">
+            <!-- Appearance Group -->
+            <div class="settings-section">Appearance</div>
+            
+            <div class="setting-group">
+                <label for="bg-image-input">Background Image URL</label>
+                <input type="text" id="bg-image-input" placeholder="https://image-url.com/img.jpg">
+            </div>
+
+            <div class="setting-group">
+                <label for="bg-color-input">Background Color (Fallback)</label>
+                <div class="input-row">
+                    <input type="color" id="bg-color-picker-input">
+                    <input type="text" id="bg-color-input" placeholder="e.g. 1a1a1a or transparent">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="font-select">Font Style</label>
+                <div class="select-wrapper">
+                    <select id="font-select">
+                        <option value="inter">Inter (Modern)</option>
+                        <option value="oswald">Oswald (Industrial)</option>
+                        <option value="spacemono">Space Mono (Tech)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <label for="language-select">Language</label>
+                <div class="select-wrapper">
+                    <select id="language-select">
+                        <option value="en">English</option>
+                        <option value="id">Indonesian</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr class="settings-divider">
+
+            <!-- Timing Group -->
+            <div class="settings-section">Timer Settings</div>
+            
+            <div class="setting-group">
+                <label for="work-time-input">Work Time (Mins)</label>
+                <input type="number" id="work-time-input" min="1" max="60" value="25">
+            </div>
+
+            <div class="setting-group">
+                <label for="short-break-input">Short Break (Mins)</label>
+                <input type="number" id="short-break-input" min="1" max="60" value="5">
+            </div>
+
+            <div class="setting-group">
+                <label for="long-break-input">Long Break (Mins)</label>
+                <input type="number" id="long-break-input" min="1" max="60" value="15">
+            </div>
+
+            <div class="setting-group checkbox-group">
+                <label class="toggle">
+                    <input type="checkbox" id="auto-break-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="label-text">Auto-start Breaks</span>
+            </div>
+
+            <div class="setting-group checkbox-group">
+                <label class="toggle">
+                    <input type="checkbox" id="auto-pomodoro-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="label-text">Auto-start Work</span>
+            </div>
+        </div>
+        
+        <div class="settings-footer">
+            <div id="embed-warning" class="embed-warning hidden">
+                ⚠️ Settings changed! You must click Copy below and "Replace" the embed link in Notion to save.
+            </div>
+            <label for="embed-url">Notion Embed URL</label>
+            <div class="url-copy-group">
+                <input type="text" id="embed-url" readonly />
+                <button id="copy-btn">Copy</button>
+            </div>
+            <p class="help-text">Copy link & paste into Notion as an Embed.</p>
+            
+            <div class="sidebar-credits">
+                <p>Created by <strong>zaidhamzah</strong></p>
+                <a href="#" target="_blank" class="donate-btn">
+                    ☕ Buy me a coffee / Donate
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <audio id="alarm-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+    <script src="script.js"></script>
+</body>
+</html>

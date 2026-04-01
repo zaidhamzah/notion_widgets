@@ -1,46 +1,19 @@
 /* Universal Variables defined by AGENT.MD */
 :root {
-  /* Default Light Theme */
-  --bg-color: #f4f5f0;
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --accent-color: #ffffff;
-  --border-radius: 12px;
-  --font-family: 'Oswald', sans-serif;
+  /* Default Theme vars */
+  --bg-color: #51a1c9; /* Fallback solid color similar to sky in image */
+  --bg-image: url('https://images.unsplash.com/photo-1506744626753-3398dd67cf26?auto=format&fit=crop&q=80&w=2940&ixlib=rb-4.0.3');
   
-  /* Widget Specific Vars */
-  --card-bg: #838e5d; /* Olive green from image */
-  --card-text: #ffffff;
-  --card-border: rgba(0, 0, 0, 0.05);
-  --card-shadow: none;
-  --line-color: rgba(255, 255, 255, 0.15);
-
+  --text-primary: #ffffff;    /* Main timer text */
+  --text-secondary: #ffffff;  /* Pill button inactive text */
+  
   --settings-bg: #ffffff;
   --settings-border: #e2e8f0;
   --input-bg: #f1f5f9;
   --input-border: #cbd5e1;
   --ui-accent: #3b82f6;
 
-  --scale: 1; /* For Size Settings */
-}
-
-/* Dark Theme overrides */
-body.dark {
-  --bg-color: #12140f;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --accent-color: #ffffff;
-  
-  --card-bg: #4c5336; /* Dark olive */
-  --card-text: #ffffff;
-  --card-border: #334155;
-  --card-shadow: none;
-  --line-color: rgba(255,255,255,0.1);
-
-  --settings-bg: #0f172a;
-  --settings-border: #1e293b;
-  --input-bg: #1e293b;
-  --input-border: #334155;
+  --font-family: 'Inter', system-ui, sans-serif;
 }
 
 /* Reset & Global */
@@ -59,7 +32,18 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+#app-background {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--bg-color);
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+    transition: background-image 0.5s ease;
 }
 
 /* Typography styles */
@@ -67,227 +51,132 @@ body {
 .font-oswald { --font-family: 'Oswald', sans-serif; text-transform: uppercase; }
 .font-spacemono { --font-family: 'Space Mono', monospace; }
 
-/* Scale multipliers */
-.size-sm { --scale: 0.7; }
-.size-md { --scale: 1; }
-.size-lg { --scale: 1.4; }
-
-/* Radius multipliers */
-.radius-none { --border-radius: 0px; }
-.radius-sm { --border-radius: 8px; }
-.radius-md { --border-radius: 12px; }
-.radius-lg { --border-radius: 24px; }
-.radius-full { --border-radius: 40px; } /* Actually looks decent on numbers */
-
 /* ==================
-   CLOCK STYLES
+   POMODORO LAYOUT
 ================== */
 
-.clock-wrapper {
-    zoom: var(--scale);
+.pomodoro-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    width: 100%;
 }
 
-.clock-container {
+/* Mode Controls (Top pills) */
+.mode-controls {
+    display: flex;
+    gap: 12px;
+}
+
+.mode-btn {
+    background-color: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    padding: 8px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mode-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.mode-btn.active {
+    background-color: #ffffff;
+    color: #1a1a1a;
+    border-color: #ffffff;
+    text-shadow: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Timer Display */
+.timer-display {
+    font-size: 160px; /* Huge text like in the image */
+    line-height: 1;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Bottom Controls */
+.bottom-controls {
     display: flex;
     align-items: center;
-    gap: 4px; /* Tiny gap */
-    padding: 0;
+    gap: 16px;
 }
 
-.overlay-text {
-    position: absolute;
-    bottom: 10px;
-    font-size: 11px;
-    font-family: 'Oswald', sans-serif; /* Forcing for the labels */
+.action-btn {
+    background-color: #ffffff;
+    color: #1a1a1a;
+    border: none;
+    padding: 12px 40px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.3rem;
     font-weight: 600;
-    color: var(--card-text);
-    z-index: 10;
-    letter-spacing: 0.5px;
+    border-radius: 40px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+.action-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, opacity 0.2s;
     opacity: 0.9;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+.icon-btn:hover {
+    opacity: 1;
+    transform: rotate(15deg);
 }
 
-.am-pm-overlay {
-    left: 10px;
-}
-
-.day-overlay {
-    right: 10px;
-}
-
-/* Flip Unit (Holding the cards) */
-.flip-unit {
-    position: relative;
-    width: 140px; 
-    height: 190px;
-    perspective: 1200px;
-    background-color: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-    border: var(--border-width, 0px) solid var(--card-border);
-    transition: background-color 0.4s ease, border-color 0.4s ease, border-radius 0.3s ease, border-width 0.3s ease;
-}
-
-/* The Cards */
-.card {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 50%;
-    background-color: var(--card-bg);
-    color: var(--card-text);
-    overflow: hidden;
-    font-size: 110px; 
-    font-weight: 600;
-    text-align: center;
-    transition: background-color 0.4s ease, color 0.4s ease;
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-}
-
-.card .digit {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    /* Let the text bounding box define the height */
-    line-height: 1; 
-    text-align: center;
-    /* Optical correction margin */
-    margin-top: -10px;
-}
-
-.card-top .digit,
-.card-flipper .digit {
-    /* Align bottom of text natively aligned with the fold, then pull half up */
-    top: 100%;
-    transform: translateY(-50%);
-}
-
-.card-bottom .digit,
-.card-flipper-back .digit {
-    /* Align top of text natively aligned with the fold, then pull half up */
-    top: 0;
-    transform: translateY(-50%);
-}
-
-/* Top half */
-.card-top {
-    top: 0;
-    border-top-left-radius: var(--border-radius);
-    border-top-right-radius: var(--border-radius);
-    transform-origin: bottom center;
-    border-bottom: 1px solid var(--line-color);
-}
-
-/* Bottom half */
-.card-bottom {
-    bottom: 0;
-    border-bottom-left-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
-}
-
-/* Flipper overlays (used for animation) */
-.card-flipper {
-    top: 0;
-    border-top-left-radius: var(--border-radius);
-    border-top-right-radius: var(--border-radius);
-    transform-origin: bottom center;
-    border-bottom: 1px solid var(--line-color);
-    z-index: 2;
-    /* Initially hidden via rotation or display */
-}
-
-.card-flipper-back {
-    bottom: 0;
-    border-bottom-left-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
-    transform-origin: top center;
-    z-index: 1;
-    transform: rotateX(180deg);
-}
-
-/* Center divide line overlay */
-.flip-unit::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background-color: var(--line-color);
-    z-index: 5;
-}
-
-/* ANIMATION CLASSES */
-
-.flip-down .card-flipper {
-    animation: flipTop 0.3s ease-in forwards;
-}
-.flip-down .card-flipper-back {
-    animation: flipBottom 0.3s ease-out 0.3s forwards;
-}
-
-@keyframes flipTop {
-    0% {
-        transform: rotateX(0deg);
-    }
-    100% {
-        transform: rotateX(-90deg);
-    }
-}
-
-@keyframes flipBottom {
-    0% {
-        transform: rotateX(90deg);
-    }
-    100% {
-        transform: rotateX(0deg);
-    }
+/* Media Queries for smaller screens */
+@media (max-width: 600px) {
+    .timer-display { font-size: 100px; }
+    .mode-btn { font-size: 0.9rem; padding: 6px 14px; }
+    .action-btn { font-size: 1.1rem; padding: 10px 30px; }
 }
 
 
 /* ==================
    SETTINGS UI
 ================== */
-
-.settings-btn {
-    position: fixed;
-    top: 12px;
-    right: 12px;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background-color: var(--settings-bg);
-    color: var(--text-secondary);
-    border: 1px solid var(--settings-border);
-    cursor: pointer;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-}
-
-body:hover .settings-btn,
-.settings-btn:focus {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.settings-btn:hover {
-    color: var(--ui-accent);
-    transform: rotate(30deg);
-}
-
 .settings-backdrop {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0,0,0,0.4);
     z-index: 150;
     opacity: 1;
     transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
 }
 
 .settings-panel {
@@ -299,13 +188,14 @@ body:hover .settings-btn,
     height: 100vh;
     background-color: var(--settings-bg);
     border-left: 1px solid var(--settings-border);
-    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.3);
     z-index: 200;
     display: block;
     overflow-y: auto;
     font-family: 'Inter', system-ui, sans-serif;
     transform: translateX(0);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #0f172a;
 }
 
 .settings-backdrop.hidden,
@@ -332,13 +222,13 @@ body:hover .settings-btn,
 .settings-header h2 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #0f172a;
 }
 
 .close-btn {
     background: none;
     border: none;
-    color: var(--text-secondary);
+    color: #64748b;
     cursor: pointer;
     padding: 8px;
     border-radius: 8px;
@@ -349,7 +239,7 @@ body:hover .settings-btn,
 }
 .close-btn:hover {
     background-color: var(--input-bg);
-    color: var(--text-primary);
+    color: #0f172a;
 }
 
 .settings-content {
@@ -357,6 +247,22 @@ body:hover .settings-btn,
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.settings-section {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.settings-divider {
+    border: none;
+    border-top: 1px solid var(--settings-border);
+    margin: 8px 0;
 }
 
 .setting-group {
@@ -368,7 +274,7 @@ body:hover .settings-btn,
 .setting-group > label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -383,9 +289,10 @@ body:hover .settings-btn,
 .setting-group.checkbox-group .label-text {
     font-size: 0.95rem;
     font-weight: 500;
-    color: var(--text-primary);
+    color: #0f172a;
 }
 
+input[type="number"],
 input[type="text"],
 select {
     width: 100%;
@@ -393,13 +300,14 @@ select {
     border-radius: 6px;
     border: 1px solid var(--input-border);
     background-color: var(--input-bg);
-    color: var(--text-primary);
+    color: #0f172a;
     font-family: inherit;
     font-size: 0.85rem;
     outline: none;
     transition: border-color 0.2s;
 }
 
+input[type="number"]:focus,
 input[type="text"]:focus,
 select:focus {
     border-color: var(--ui-accent);
@@ -411,7 +319,7 @@ select:focus {
 .select-wrapper::after {
     content: "▼";
     font-size: 0.7rem;
-    color: var(--text-secondary);
+    color: #64748b;
     position: absolute;
     right: 14px;
     top: 50%;
@@ -501,7 +409,7 @@ input:checked + .slider:before {
     display: block;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: #64748b;
     margin-bottom: 8px;
 }
 
@@ -512,7 +420,7 @@ input:checked + .slider:before {
 
 .url-copy-group input {
     background-color: var(--input-bg);
-    color: var(--text-secondary);
+    color: #64748b;
     font-size: 0.75rem;
     cursor: text;
 }
@@ -537,7 +445,7 @@ input:checked + .slider:before {
 
 .help-text {
     font-size: 0.75rem;
-    color: var(--text-secondary);
+    color: #64748b;
     margin-top: 12px;
     text-align: center;
 }
@@ -552,12 +460,6 @@ input:checked + .slider:before {
     line-height: 1.4;
     border: 1px solid #fde68a;
     font-weight: 500;
-}
-
-body.dark .embed-warning {
-    background-color: rgba(217, 119, 6, 0.15);
-    color: #fbbf24;
-    border-color: rgba(245, 158, 11, 0.2);
 }
 
 .embed-warning.hidden {
@@ -578,12 +480,12 @@ body.dark .embed-warning {
 
 .sidebar-credits p {
     font-size: 0.8rem;
-    color: var(--text-secondary);
+    color: #64748b;
     margin: 0;
 }
 
 .sidebar-credits strong {
-    color: var(--ui-text-primary, var(--text-primary));
+    color: #0f172a;
 }
 
 .donate-btn {
@@ -606,8 +508,4 @@ body.dark .embed-warning {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px -2px rgba(255, 221, 0, 0.4);
     background-color: #ffe633;
-}
-
-body.dark .donate-btn {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
 }
